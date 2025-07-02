@@ -85,24 +85,21 @@ export interface SwapRequest {
     skill_wanted: string;
 }
 
+export interface DemandeSoutien {
+    id: number;
+    demandeur_id: number;
+    helper_id?: number;
+    competence_id: number;
+    competence_name?: string;
+    statut: 'Pending' | 'Approved' | 'Completed' | 'Cancelled';
+    dateDemande: string;
+}
+
+export interface DemandeSoutienCreate {
+    competence_id: number;
+}
+
 class ApiService {
-    private getAuthToken(): string | null {
-        return localStorage.getItem('auth_token');
-    }
-
-    private getAuthHeaders(): Record<string, string> {
-        const token = this.getAuthToken();
-        const headers: Record<string, string> = {
-            'Content-Type': 'application/json',
-        };
-
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
-        }
-
-        return headers;
-    }
-
     private async request<T>(
         endpoint: string,
         options: RequestInit = {}
@@ -111,9 +108,9 @@ class ApiService {
         console.log('Making API request to:', url);
 
         const config: RequestInit = {
-            credentials: 'include',
+            credentials: 'include', // This is crucial for httpOnly cookies
             headers: {
-                ...this.getAuthHeaders(),
+                'Content-Type': 'application/json',
                 ...options.headers,
             },
             ...options,
@@ -127,11 +124,11 @@ class ApiService {
                 const errorData = await response.json().catch(() => ({}));
                 console.log('Error response data:', errorData);
 
-                // Handle token expiration
+                // Handle authentication errors
                 if (response.status === 401) {
-                    localStorage.removeItem('auth_token');
+                    // Clear any stored user data but DON'T redirect here
                     localStorage.removeItem('user');
-                    window.location.href = '/login';
+                    // Let the calling component handle the redirect
                     return Promise.reject(new Error('Session expired'));
                 }
 
@@ -154,9 +151,8 @@ class ApiService {
             body: JSON.stringify(data),
         });
 
-        // Store token and user data
-        if (response.access_token) {
-            localStorage.setItem('auth_token', response.access_token);
+        // Store user data locally (token is in httpOnly cookie)
+        if (response.user) {
             localStorage.setItem('user', JSON.stringify(response.user));
         }
 
@@ -169,9 +165,8 @@ class ApiService {
             body: JSON.stringify(data),
         });
 
-        // Store token and user data
-        if (response.access_token) {
-            localStorage.setItem('auth_token', response.access_token);
+        // Store user data locally (token is in httpOnly cookie)
+        if (response.user) {
             localStorage.setItem('user', JSON.stringify(response.user));
         }
 
@@ -211,18 +206,22 @@ class ApiService {
         } catch (error) {
             console.error('Logout failed:', error);
         } finally {
-            // Clear local storage regardless of API call success
-            localStorage.removeItem('auth_token');
+            // Clear local storage (httpOnly cookie will be cleared by server)
             localStorage.removeItem('user');
         }
     }
 
-    // Check if user is authenticated
-    isAuthenticated(): boolean {
-        return !!this.getAuthToken();
+    // Check if user is authenticated by trying to get current user
+    async isAuthenticated(): Promise<boolean> {
+        try {
+            await this.getCurrentUser();
+            return true;
+        } catch {
+            return false;
+        }
     }
 
-    // Get stored user data
+    // Get stored user data (for quick access without API call)
     getStoredUser(): User | null {
         const storedUser = localStorage.getItem('user');
         return storedUser ? JSON.parse(storedUser) : null;
@@ -278,6 +277,41 @@ class ApiService {
     async rejectSwapRequest(requestId: number): Promise<SwapRequest> {
         return await this.request<SwapRequest>(`/skill-swap/requests/${requestId}/reject`, {
             method: 'PUT',
+        });
+    }
+
+    // Demande Soutien (Support Requests) methods
+    async createDemandeSoutien(data: DemandeSoutienCreate): Promise<DemandeSoutien> {
+        return await this.request<DemandeSoutien>('/demande-soutien', {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+    }
+
+    async getMyDemandes(): Promise<DemandeSoutien[]> {
+        return await this.request<DemandeSoutien[]>('/demande-soutien/mes-demandes');
+    }
+
+    async getDemandesEnAttente(): Promise<DemandeSoutien[]> {
+        return await this.request<DemandeSoutien[]>('/demande-soutien/en-attente');
+    }
+
+    async accepterDemande(demandeId: number): Promise<DemandeSoutien> {
+        return await this.request<DemandeSoutien>(`/demande-soutien/${demandeId}/accepter`, {
+            method: 'POST',
+        });
+    }
+
+    async updateDemande(demandeId: number, data: { helper_id?: number; statut?: string }): Promise<DemandeSoutien> {
+        return await this.request<DemandeSoutien>(`/demande-soutien/${demandeId}`, {
+            method: 'PUT',
+            body: JSON.stringify(data),
+        });
+    }
+
+    async deleteDemande(demandeId: number): Promise<void> {
+        return await this.request<void>(`/demande-soutien/${demandeId}`, {
+            method: 'DELETE',
         });
     }
 }
