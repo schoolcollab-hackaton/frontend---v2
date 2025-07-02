@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { apiService, type RegisterData } from "../services/api";
 
 interface RegisterProps {
   setUser: (user: { isProfileComplete: boolean }) => void;
@@ -13,6 +14,7 @@ export default function Register({ setUser }: RegisterProps) {
     password: "",
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -20,18 +22,42 @@ export default function Register({ setUser }: RegisterProps) {
       ...formData,
       [e.target.name]: e.target.value,
     });
+    // Clear error when user starts typing
+    if (error) setError(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError(null);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      const registerData: RegisterData = {
+        nom: formData.lastname,
+        prenom: formData.firstname,
+        email: formData.email,
+        password: formData.password,
+      };
 
-    setUser({ isProfileComplete: false });
-    navigate("/complete-profile");
-    setIsLoading(false);
+      const response = await apiService.register(registerData);
+
+      // Set user with profile completion status
+      setUser({
+        isProfileComplete: response.user.profile_completed || false,
+      });
+
+      // Navigate based on profile completion
+      if (response.user.profile_completed) {
+        navigate("/");
+      } else {
+        navigate("/complete-profile");
+      }
+    } catch (error) {
+      console.error("Registration failed:", error);
+      setError(error instanceof Error ? error.message : "Registration failed");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -45,6 +71,21 @@ export default function Register({ setUser }: RegisterProps) {
         </div>
 
         <form onSubmit={handleSubmit}>
+          {error && (
+            <div
+              style={{
+                background: "#fee2e2",
+                color: "#dc2626",
+                padding: "0.75rem",
+                borderRadius: "0.5rem",
+                marginBottom: "1rem",
+                fontSize: "0.875rem",
+              }}
+            >
+              {error}
+            </div>
+          )}
+
           <div className="grid grid-2">
             <div className="form-group">
               <label className="form-label" htmlFor="firstname">
@@ -123,7 +164,13 @@ export default function Register({ setUser }: RegisterProps) {
         <div className="text-center mt-4">
           <p className="text-sm text-muted">
             Déjà un compte ?{" "}
-            <Link to="/login" className="text-primary-color">
+            <Link
+              to="/login"
+              style={{
+                color: "var(--primary-color)",
+                textDecoration: "none",
+              }}
+            >
               Se connecter
             </Link>
           </p>

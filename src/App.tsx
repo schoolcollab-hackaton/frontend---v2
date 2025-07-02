@@ -5,10 +5,10 @@ import {
   Navigate,
 } from "react-router-dom";
 import { useState } from "react";
-import Register from "./components/Register";
-import Login from "./components/Login";
-import CompleteProfile from "./components/CompleteProfile";
-import Home from "./components/Home";
+import Register from "./components/Register.tsx";
+import Login from "./components/Login.tsx";
+import CompleteProfile from "./components/CompleteProfile.tsx";
+import Home from "./components/Home.tsx";
 import "./App.css";
 
 function App() {

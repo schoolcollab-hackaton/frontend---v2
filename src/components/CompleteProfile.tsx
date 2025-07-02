@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { apiService, type ProfileCompleteData } from "../services/api";
 
 interface CompleteProfileProps {
   setUser: (user: { isProfileComplete: boolean }) => void;
@@ -41,6 +42,7 @@ export default function CompleteProfile({ setUser }: CompleteProfileProps) {
     centresInteret: [] as string[],
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const handleCompetenceChange = (comp: string, checked: boolean) => {
@@ -71,13 +73,40 @@ export default function CompleteProfile({ setUser }: CompleteProfileProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError(null);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      // Filter out undefined competences
+      const cleanedCompetences = Object.fromEntries(
+        Object.entries(formData.competences).filter(
+          ([_, value]) => value !== undefined
+        )
+      );
 
-    setUser({ isProfileComplete: true });
-    navigate("/");
-    setIsLoading(false);
+      const profileData: ProfileCompleteData = {
+        filiere: formData.filiere,
+        niveau: formData.niveau as number,
+        competences: cleanedCompetences,
+        centres_interet: formData.centresInteret,
+      };
+
+      await apiService.completeProfile(profileData);
+
+      // Update user state to mark profile as complete
+      setUser({ isProfileComplete: true });
+
+      // Navigate to home page
+      navigate("/");
+    } catch (error) {
+      console.error("Profile completion failed:", error);
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Échec de la finalisation du profil"
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -91,6 +120,21 @@ export default function CompleteProfile({ setUser }: CompleteProfileProps) {
         </div>
 
         <form onSubmit={handleSubmit}>
+          {error && (
+            <div
+              style={{
+                background: "#fee2e2",
+                color: "#dc2626",
+                padding: "0.75rem",
+                borderRadius: "0.5rem",
+                marginBottom: "1rem",
+                fontSize: "0.875rem",
+              }}
+            >
+              {error}
+            </div>
+          )}
+
           <div className="grid grid-2">
             <div className="form-group">
               <label className="form-label" htmlFor="filiere">

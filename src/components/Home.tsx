@@ -1,3 +1,5 @@
+import { apiService } from "../services/api";
+
 interface HomeProps {
   user: { isProfileComplete: boolean };
   setUser: (user: { isProfileComplete: boolean } | null) => void;
@@ -5,6 +7,7 @@ interface HomeProps {
 
 export default function Home({ user, setUser }: HomeProps) {
   const handleLogout = () => {
+    apiService.logout();
     setUser(null);
   };
 
