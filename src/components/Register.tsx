@@ -4,9 +4,13 @@ import { apiService, type RegisterData } from "../services/api";
 
 interface RegisterProps {
   setUser: (user: { isProfileComplete: boolean }) => void;
+  setIsAuthenticated: (isAuth: boolean) => void;
 }
 
-export default function Register({ setUser }: RegisterProps) {
+export default function Register({
+  setUser,
+  setIsAuthenticated,
+}: RegisterProps) {
   const [formData, setFormData] = useState({
     firstname: "",
     lastname: "",
@@ -41,12 +45,11 @@ export default function Register({ setUser }: RegisterProps) {
 
       const response = await apiService.register(registerData);
 
-      // Set user with profile completion status
-      setUser({
-        isProfileComplete: response.user.profile_completed || false,
-      });
+      // Use the actual profile_completed field from backend response
+      setUser({ isProfileComplete: response.user.profile_completed });
+      setIsAuthenticated(true);
 
-      // Navigate based on profile completion
+      // Navigate based on actual profile completion status
       if (response.user.profile_completed) {
         navigate("/");
       } else {

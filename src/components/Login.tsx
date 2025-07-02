@@ -4,9 +4,10 @@ import { apiService, type LoginData } from "../services/api";
 
 interface LoginProps {
   setUser: (user: { isProfileComplete: boolean }) => void;
+  setIsAuthenticated: (isAuth: boolean) => void;
 }
 
-export default function Login({ setUser }: LoginProps) {
+export default function Login({ setUser, setIsAuthenticated }: LoginProps) {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -37,12 +38,11 @@ export default function Login({ setUser }: LoginProps) {
 
       const response = await apiService.login(loginData);
 
-      // Set user with profile completion status
-      setUser({
-        isProfileComplete: response.user.profile_completed || false,
-      });
+      // Use the actual profile_completed field from backend response
+      setUser({ isProfileComplete: response.user.profile_completed });
+      setIsAuthenticated(true);
 
-      // Navigate based on profile completion
+      // Navigate based on actual profile completion status
       if (response.user.profile_completed) {
         navigate("/");
       } else {

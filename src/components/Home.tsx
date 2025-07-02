@@ -1,86 +1,139 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { apiService } from "../services/api";
+import "./Home.css";
 
 interface HomeProps {
   user: { isProfileComplete: boolean };
   setUser: (user: { isProfileComplete: boolean } | null) => void;
+  setIsAuthenticated: (isAuth: boolean) => void;
 }
 
-export default function Home({ user, setUser }: HomeProps) {
+export default function Home({ user, setUser, setIsAuthenticated }: HomeProps) {
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [activeApp, setActiveApp] = useState<string | null>(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    loadUserData();
+  }, []);
+
+  const loadUserData = async () => {
+    try {
+      const userData = await apiService.getCurrentUser();
+      setCurrentUser(userData);
+    } catch (error) {
+      console.error("Error loading user data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleLogout = () => {
     apiService.logout();
     setUser(null);
+    setIsAuthenticated(false);
   };
+
+  const handleAppClick = (appName: string) => {
+    setActiveApp(appName);
+    switch (appName) {
+      case "Skill Swap":
+        navigate("/skill-swap");
+        break;
+      // Add other app routes here
+      default:
+        console.log(`Opening ${appName} app...`);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="loading-state">
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>Chargement de votre espace personnel...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="home-layout">
       <nav className="navbar">
-        <div className="navbar-brand">SchoolCollab</div>
-        <div className="navbar-nav">
-          <span className="text-sm text-muted">Bienvenue !</span>
-          <button onClick={handleLogout} className="btn btn-outline">
-            Déconnexion
-          </button>
+        <div className="navbar-content">
+          <div className="brand-logo">
+            <span className="brand-emoji">🎓</span>
+            <span className="brand-text">SchoolCollab</span>
+          </div>
+
+          <div className="navbar-actions">
+            <div className="notifications">
+              <button className="btn-icon">
+                <span>🔔</span>
+                <span className="notification-badge">2</span>
+              </button>
+            </div>
+
+            <div className="user-profile">
+              <img
+                src={currentUser?.avatar || "https://via.placeholder.com/32"}
+                alt="Profile"
+                className="user-avatar"
+              />
+            </div>
+
+            <button onClick={handleLogout} className="btn-icon">
+              <span>↪️</span>
+            </button>
+          </div>
         </div>
       </nav>
 
-      <main className="main-content">
-        <div className="text-center">
-          <h1 className="auth-title">Bienvenue sur SchoolCollab ! 🎉</h1>
-          <p className="auth-subtitle mb-4">
-            Votre profil est maintenant complet. Explorez la plateforme et
-            connectez-vous avec vos camarades.
-          </p>
+      <main className="home-main">
+        <div className="apps-container">
+          <div className="welcome-section">
+            <h1 className="welcome-title">
+              <span className="user-highlight">{currentUser?.prenom}</span>
+            </h1>
+          </div>
 
-          <div
-            className="grid grid-2"
-            style={{ maxWidth: 800, margin: "2rem auto" }}
-          >
-            <div className="auth-card">
-              <h3
-                style={{ marginBottom: "1rem", color: "var(--primary-color)" }}
-              >
-                📚 Publications
-              </h3>
-              <p className="text-sm text-muted">
-                Partagez vos projets, posez des questions et découvrez le
-                contenu de vos camarades.
-              </p>
+          <div className="apps-row">
+            <div
+              className={`app-card ${
+                activeApp === "Skill Swap" ? "active" : ""
+              }`}
+              onClick={() => handleAppClick("Skill Swap")}
+            >
+              <div className="app-icon-wrapper skill-swap">
+                <span>🔄</span>
+              </div>
+              <h3 className="app-name">Skill Swap</h3>
             </div>
 
-            <div className="auth-card">
-              <h3
-                style={{ marginBottom: "1rem", color: "var(--primary-color)" }}
-              >
-                👥 Groupes
-              </h3>
-              <p className="text-sm text-muted">
-                Rejoignez des groupes selon vos centres d'intérêt et collaborez
-                sur des projets.
-              </p>
+            <div
+              className={`app-card ${
+                activeApp === "Mentorship" ? "active" : ""
+              }`}
+              onClick={() => handleAppClick("Mentorship")}
+            >
+              <div className="app-icon-wrapper mentorship">
+                <span>🤝</span>
+              </div>
+              <h3 className="app-name">Mentorship</h3>
             </div>
 
-            <div className="auth-card">
-              <h3
-                style={{ marginBottom: "1rem", color: "var(--primary-color)" }}
-              >
-                🤝 Parrainage
-              </h3>
-              <p className="text-sm text-muted">
-                Trouvez un mentor ou devenez parrain pour aider les étudiants
-                plus jeunes.
-              </p>
-            </div>
-
-            <div className="auth-card">
-              <h3
-                style={{ marginBottom: "1rem", color: "var(--primary-color)" }}
-              >
-                🤖 Assistant IA
-              </h3>
-              <p className="text-sm text-muted">
-                Utilisez notre chatbot intelligent pour obtenir de l'aide et des
-                recommandations.
-              </p>
+            <div
+              className={`app-card ${
+                activeApp === "Assistant IA" ? "active" : ""
+              }`}
+              onClick={() => handleAppClick("Assistant IA")}
+            >
+              <div className="app-icon-wrapper chatbot">
+                <span>🤖</span>
+              </div>
+              <h3 className="app-name">Assistant IA</h3>
             </div>
           </div>
         </div>
