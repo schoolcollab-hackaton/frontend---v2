@@ -10,7 +10,9 @@ export interface User {
     avatar?: string;
     filiere?: string;
     niveau?: number;
-    profile_completed: boolean; // Now this will be returned from backend
+    profile_completed: boolean;
+    discord?: string;
+    linkedin?: string;
 }
 
 export interface AuthResponse {
@@ -36,9 +38,71 @@ export interface ProfileCompleteData {
     niveau: number;
     competences: { [key: string]: string };
     centres_interet: string[];
+    is_mentor?: boolean;
+    discord?: string;
+    linkedin?: string;
+}
+
+export interface SkillDetail {
+    skill: string;
+    their_level?: number;
+    your_level?: number;
+    benefit: string;
+}
+
+export interface SwapDetails {
+    skills_they_offer: SkillDetail[];
+    skills_you_offer: SkillDetail[];
+    mutual_benefits: string[];
+    skill_gaps_filled: number;
+    complementary_skills: number;
+}
+
+export interface SkillSwapRecommendation {
+    id: number;
+    nom: string;
+    prenom: string;
+    score: number;
+    filiere?: string;
+    niveau?: string;
+    roles: string[];
+    interests: string[];
+    competences: Array<{ [key: string]: any }>;
+
+    swap_score: number;
+    swap_details: SwapDetails;
+    recommendation_type: string;
+}
+
+export interface SwapRequest {
+    id: number;
+    sender_id: number;
+    receiver_id: number;
+    message: string;
+    status: 'pending' | 'accepted' | 'rejected';
+    created_at: string;
+    skill_offered: string;
+    skill_wanted: string;
 }
 
 class ApiService {
+    private getAuthToken(): string | null {
+        return localStorage.getItem('auth_token');
+    }
+
+    private getAuthHeaders(): Record<string, string> {
+        const token = this.getAuthToken();
+        const headers: Record<string, string> = {
+            'Content-Type': 'application/json',
+        };
+
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        return headers;
+    }
+
     private async request<T>(
         endpoint: string,
         options: RequestInit = {}
@@ -47,9 +111,9 @@ class ApiService {
         console.log('Making API request to:', url);
 
         const config: RequestInit = {
-            credentials: 'include', // Include httpOnly cookies
+            credentials: 'include',
             headers: {
-                'Content-Type': 'application/json',
+                ...this.getAuthHeaders(),
                 ...options.headers,
             },
             ...options,
@@ -62,6 +126,15 @@ class ApiService {
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
                 console.log('Error response data:', errorData);
+
+                // Handle token expiration
+                if (response.status === 401) {
+                    localStorage.removeItem('auth_token');
+                    localStorage.removeItem('user');
+                    window.location.href = '/login';
+                    return Promise.reject(new Error('Session expired'));
+                }
+
                 throw new Error(errorData.detail || `HTTP ${response.status}`);
             }
 
@@ -76,41 +149,136 @@ class ApiService {
 
     // Authentication methods
     async register(data: RegisterData): Promise<AuthResponse> {
-        return await this.request<AuthResponse>('/auth/register', {
+        const response = await this.request<AuthResponse>('/auth/register', {
             method: 'POST',
             body: JSON.stringify(data),
         });
+
+        // Store token and user data
+        if (response.access_token) {
+            localStorage.setItem('auth_token', response.access_token);
+            localStorage.setItem('user', JSON.stringify(response.user));
+        }
+
+        return response;
     }
 
     async login(data: LoginData): Promise<AuthResponse> {
-        return await this.request<AuthResponse>('/auth/login', {
+        const response = await this.request<AuthResponse>('/auth/login', {
             method: 'POST',
             body: JSON.stringify(data),
         });
+
+        // Store token and user data
+        if (response.access_token) {
+            localStorage.setItem('auth_token', response.access_token);
+            localStorage.setItem('user', JSON.stringify(response.user));
+        }
+
+        return response;
     }
 
     async getCurrentUser(): Promise<User> {
-        return await this.request<User>('/auth/me', {
-            credentials: 'include', // This ensures cookies are sent with the request
-        });
+        return await this.request<User>('/auth/me');
     }
 
     async completeProfile(data: ProfileCompleteData): Promise<any> {
-        return await this.request('/profile/complete', {
+        const response = await this.request('/profile/complete', {
             method: 'PUT',
             body: JSON.stringify(data),
         });
+
+        // Update stored user data to reflect profile completion
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+            const user = JSON.parse(storedUser);
+            user.profile_completed = true;
+            user.filiere = data.filiere;
+            user.niveau = data.niveau;
+            if (data.discord) user.discord = data.discord;
+            if (data.linkedin) user.linkedin = data.linkedin;
+            localStorage.setItem('user', JSON.stringify(user));
+        }
+
+        return response;
     }
 
     async logout(): Promise<void> {
         try {
             await this.request('/auth/logout', {
                 method: 'POST',
-                credentials: 'include',
             });
         } catch (error) {
             console.error('Logout failed:', error);
+        } finally {
+            // Clear local storage regardless of API call success
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user');
         }
+    }
+
+    // Check if user is authenticated
+    isAuthenticated(): boolean {
+        return !!this.getAuthToken();
+    }
+
+    // Get stored user data
+    getStoredUser(): User | null {
+        const storedUser = localStorage.getItem('user');
+        return storedUser ? JSON.parse(storedUser) : null;
+    }
+
+    // Profile data endpoints
+    async getCompetences(): Promise<Array<{ nom: string, description: string }>> {
+        return await this.request<Array<{ nom: string, description: string }>>('/profile/competences');
+    }
+
+    async getCentresInteret(): Promise<Array<{ titre: string }>> {
+        return await this.request<Array<{ titre: string }>>('/profile/centres-interet');
+    }
+
+    // Skill Swap Recommendations
+    async getSkillSwapRecommendations(limit: number = 10): Promise<SkillSwapRecommendation[]> {
+        return await this.request<SkillSwapRecommendation[]>(
+            `/recommendations/skill-swap?limit=${limit}`
+        );
+    }
+
+    // Send swap request
+    async sendSwapRequest(data: {
+        receiver_id: number;
+        message: string;
+        skill_offered: string;
+        skill_wanted: string;
+    }): Promise<SwapRequest> {
+        return await this.request<SwapRequest>('/skill-swap/requests', {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+    }
+
+    // Get received swap requests
+    async getReceivedSwapRequests(): Promise<SwapRequest[]> {
+        return await this.request<SwapRequest[]>('/skill-swap/requests/received');
+    }
+
+    // Get sent swap requests
+    async getSentSwapRequests(): Promise<SwapRequest[]> {
+        return await this.request<SwapRequest[]>('/skill-swap/requests/sent');
+    }
+
+    // Accept swap request
+    async acceptSwapRequest(requestId: number): Promise<SwapRequest> {
+        return await this.request<SwapRequest>(`/skill-swap/requests/${requestId}/accept`, {
+            method: 'PUT',
+        });
+    }
+
+    // Reject swap request
+    async rejectSwapRequest(requestId: number): Promise<SwapRequest> {
+        return await this.request<SwapRequest>(`/skill-swap/requests/${requestId}/reject`, {
+            method: 'PUT',
+        });
     }
 }
 
