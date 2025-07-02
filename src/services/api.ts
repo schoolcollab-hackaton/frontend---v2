@@ -90,9 +90,9 @@ class ApiService {
     }
 
     async getCurrentUser(): Promise<User> {
-        // Since backend expects Authorization header but we're using httpOnly cookies,
-        // we need to make the request without auth header and let cookies handle it
-        return await this.request<User>('/auth/me');
+        return await this.request<User>('/auth/me', {
+            credentials: 'include', // This ensures cookies are sent with the request
+        });
     }
 
     async completeProfile(data: ProfileCompleteData): Promise<any> {
@@ -102,9 +102,15 @@ class ApiService {
         });
     }
 
-    logout() {
-        // For httpOnly cookies, you'd need a backend logout endpoint
-        // that clears the cookie
+    async logout(): Promise<void> {
+        try {
+            await this.request('/auth/logout', {
+                method: 'POST',
+                credentials: 'include',
+            });
+        } catch (error) {
+            console.error('Logout failed:', error);
+        }
     }
 }
 

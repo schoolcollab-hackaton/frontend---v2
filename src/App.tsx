@@ -9,6 +9,7 @@ import Register from "./components/Register.tsx";
 import Login from "./components/Login.tsx";
 import CompleteProfile from "./components/CompleteProfile.tsx";
 import Home from "./components/Home.tsx";
+import SkillSwap from "./components/SkillSwap.tsx";
 import { apiService } from "./services/api";
 import "./App.css";
 
@@ -99,6 +100,20 @@ function App() {
                     setUser={setUser}
                     setIsAuthenticated={setIsAuthenticated}
                   />
+                ) : (
+                  <Navigate to="/complete-profile" />
+                )
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
+          />
+          <Route
+            path="/skill-swap"
+            element={
+              isAuthenticated ? (
+                user?.isProfileComplete ? (
+                  <SkillSwap />
                 ) : (
                   <Navigate to="/complete-profile" />
                 )
