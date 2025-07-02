@@ -39,36 +39,16 @@ export interface ProfileCompleteData {
 }
 
 class ApiService {
-    private token: string | null = null;
-
-    setToken(token: string) {
-        this.token = token;
-        localStorage.setItem('access_token', token);
-    }
-
-    getToken(): string | null {
-        if (!this.token) {
-            this.token = localStorage.getItem('access_token');
-        }
-        return this.token;
-    }
-
-    clearToken() {
-        this.token = null;
-        localStorage.removeItem('access_token');
-    }
-
     private async request<T>(
         endpoint: string,
         options: RequestInit = {}
     ): Promise<T> {
         const url = `${API_BASE_URL}${endpoint}`;
-        const token = this.getToken();
 
         const config: RequestInit = {
+            credentials: 'include', // This handles the httpOnly cookie automatically
             headers: {
                 'Content-Type': 'application/json',
-                ...(token && { Authorization: `Bearer ${token}` }),
                 ...options.headers,
             },
             ...options,
@@ -91,23 +71,17 @@ class ApiService {
 
     // Authentication methods
     async register(data: RegisterData): Promise<AuthResponse> {
-        const response = await this.request<AuthResponse>('/auth/register', {
+        return await this.request<AuthResponse>('/auth/register', {
             method: 'POST',
             body: JSON.stringify(data),
         });
-
-        this.setToken(response.access_token);
-        return response;
     }
 
     async login(data: LoginData): Promise<AuthResponse> {
-        const response = await this.request<AuthResponse>('/auth/login', {
+        return await this.request<AuthResponse>('/auth/login', {
             method: 'POST',
             body: JSON.stringify(data),
         });
-
-        this.setToken(response.access_token);
-        return response;
     }
 
     async getCurrentUser(): Promise<User> {
@@ -122,7 +96,8 @@ class ApiService {
     }
 
     logout() {
-        this.clearToken();
+        // For httpOnly cookies, you'd need a backend logout endpoint
+        // that clears the cookie
     }
 }
 
