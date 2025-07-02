@@ -10,7 +10,7 @@ export interface User {
     avatar?: string;
     filiere?: string;
     niveau?: number;
-    profile_completed?: boolean;
+    profile_completed: boolean; // Now this will be returned from backend
 }
 
 export interface AuthResponse {
@@ -44,9 +44,10 @@ class ApiService {
         options: RequestInit = {}
     ): Promise<T> {
         const url = `${API_BASE_URL}${endpoint}`;
+        console.log('Making API request to:', url);
 
         const config: RequestInit = {
-            credentials: 'include', // This handles the httpOnly cookie automatically
+            credentials: 'include', // Include httpOnly cookies
             headers: {
                 'Content-Type': 'application/json',
                 ...options.headers,
@@ -56,13 +57,17 @@ class ApiService {
 
         try {
             const response = await fetch(url, config);
+            console.log('Response received:', response.status, response.statusText);
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
+                console.log('Error response data:', errorData);
                 throw new Error(errorData.detail || `HTTP ${response.status}`);
             }
 
-            return await response.json();
+            const data = await response.json();
+            console.log('Success response data:', data);
+            return data;
         } catch (error) {
             console.error('API Request failed:', error);
             throw error;
@@ -85,6 +90,8 @@ class ApiService {
     }
 
     async getCurrentUser(): Promise<User> {
+        // Since backend expects Authorization header but we're using httpOnly cookies,
+        // we need to make the request without auth header and let cookies handle it
         return await this.request<User>('/auth/me');
     }
 
