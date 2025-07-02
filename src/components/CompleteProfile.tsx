@@ -1,10 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiService, type ProfileCompleteData } from "../services/api";
-
-interface CompleteProfileProps {
-  setUser: (user: { isProfileComplete: boolean }) => void;
-}
+import { useAuth } from "../contexts/AuthContext";
 
 const filieres = ["WMD", "API", "BDAI", "CCSN"];
 const niveaux = [1, 2, 3, 4, 5];
@@ -34,7 +31,8 @@ const centresInteret = [
   "Cuisine",
 ];
 
-export default function CompleteProfile({ setUser }: CompleteProfileProps) {
+export default function CompleteProfile() {
+  const { checkAuth } = useAuth();
   const [formData, setFormData] = useState({
     filiere: "",
     niveau: "" as number | "",
@@ -92,8 +90,8 @@ export default function CompleteProfile({ setUser }: CompleteProfileProps) {
 
       await apiService.completeProfile(profileData);
 
-      // Update user state to mark profile as complete
-      setUser({ isProfileComplete: true });
+      // Refresh auth state to get updated user data
+      await checkAuth();
 
       // Navigate to home page
       navigate("/");

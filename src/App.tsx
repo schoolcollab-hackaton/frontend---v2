@@ -4,49 +4,71 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
-import { useState } from "react";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Register from "./components/Register.tsx";
 import Login from "./components/Login.tsx";
 import CompleteProfile from "./components/CompleteProfile.tsx";
 import Home from "./components/Home.tsx";
 import "./App.css";
 
-function App() {
-  const [user, setUser] = useState<{ isProfileComplete: boolean } | null>(null);
+function AppRoutes() {
+  const { user, isLoading, isAuthenticated } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="loading-container">
+        <div>Loading...</div>
+      </div>
+    );
+  }
 
   return (
-    <Router>
-      <div className="app">
-        <Routes>
-          <Route path="/register" element={<Register setUser={setUser} />} />
-          <Route path="/login" element={<Login setUser={setUser} />} />
-          <Route
-            path="/complete-profile"
-            element={
-              user && !user.isProfileComplete ? (
-                <CompleteProfile setUser={setUser} />
-              ) : (
-                <Navigate to={user ? "/" : "/login"} />
-              )
-            }
-          />
-          <Route
-            path="/"
-            element={
-              user ? (
-                user.isProfileComplete ? (
-                  <Home user={user} setUser={setUser} />
-                ) : (
-                  <Navigate to="/complete-profile" />
-                )
-              ) : (
-                <Navigate to="/login" />
-              )
-            }
-          />
-        </Routes>
-      </div>
-    </Router>
+    <Routes>
+      <Route 
+        path="/register" 
+        element={!isAuthenticated ? <Register /> : <Navigate to="/" />} 
+      />
+      <Route 
+        path="/login" 
+        element={!isAuthenticated ? <Login /> : <Navigate to="/" />} 
+      />
+      <Route
+        path="/complete-profile"
+        element={
+          isAuthenticated && user && !user.profile_completed ? (
+            <CompleteProfile />
+          ) : (
+            <Navigate to={isAuthenticated ? "/" : "/login"} />
+          )
+        }
+      />
+      <Route
+        path="/"
+        element={
+          isAuthenticated ? (
+            user?.profile_completed ? (
+              <Home />
+            ) : (
+              <Navigate to="/complete-profile" />
+            )
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+    </Routes>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <Router>
+        <div className="app">
+          <AppRoutes />
+        </div>
+      </Router>
+    </AuthProvider>
   );
 }
 

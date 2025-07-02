@@ -1,12 +1,8 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { apiService, type RegisterData } from "../services/api";
+import { useAuth } from "../contexts/AuthContext";
 
-interface RegisterProps {
-  setUser: (user: { isProfileComplete: boolean }) => void;
-}
-
-export default function Register({ setUser }: RegisterProps) {
+export default function Register() {
   const [formData, setFormData] = useState({
     firstname: "",
     lastname: "",
@@ -16,13 +12,13 @@ export default function Register({ setUser }: RegisterProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { register } = useAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
-    // Clear error when user starts typing
     if (error) setError(null);
   };
 
@@ -32,22 +28,14 @@ export default function Register({ setUser }: RegisterProps) {
     setError(null);
 
     try {
-      const registerData: RegisterData = {
+      const user = await register({
         nom: formData.lastname,
         prenom: formData.firstname,
         email: formData.email,
         password: formData.password,
-      };
-
-      const response = await apiService.register(registerData);
-
-      // Set user with profile completion status
-      setUser({
-        isProfileComplete: response.user.profile_completed || false,
       });
 
-      // Navigate based on profile completion
-      if (response.user.profile_completed) {
+      if (user.profile_completed) {
         navigate("/");
       } else {
         navigate("/complete-profile");

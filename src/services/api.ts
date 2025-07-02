@@ -11,6 +11,7 @@ export interface User {
     filiere?: string;
     niveau?: number;
     profile_completed?: boolean;
+    roles?: string[];
 }
 
 export interface AuthResponse {
@@ -55,10 +56,12 @@ class ApiService {
         };
 
         try {
+            console.log('Making request to:', url, 'with config:', config);
             const response = await fetch(url, config);
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
+                console.error('Request failed:', response.status, errorData);
                 throw new Error(errorData.detail || `HTTP ${response.status}`);
             }
 
@@ -89,15 +92,17 @@ class ApiService {
     }
 
     async completeProfile(data: ProfileCompleteData): Promise<any> {
+        console.log('Attempting to complete profile with data:', data);
         return await this.request('/profile/complete', {
             method: 'PUT',
             body: JSON.stringify(data),
         });
     }
 
-    logout() {
-        // For httpOnly cookies, you'd need a backend logout endpoint
-        // that clears the cookie
+    async logout(): Promise<void> {
+        return await this.request('/auth/logout', {
+            method: 'POST',
+        });
     }
 }
 

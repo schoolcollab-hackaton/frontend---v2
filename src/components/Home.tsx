@@ -1,14 +1,14 @@
-import { apiService } from "../services/api";
+import { useAuth } from "../contexts/AuthContext";
 
-interface HomeProps {
-  user: { isProfileComplete: boolean };
-  setUser: (user: { isProfileComplete: boolean } | null) => void;
-}
+export default function Home() {
+  const { user, logout } = useAuth();
 
-export default function Home({ user, setUser }: HomeProps) {
-  const handleLogout = () => {
-    apiService.logout();
-    setUser(null);
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
   };
 
   return (
@@ -16,7 +16,7 @@ export default function Home({ user, setUser }: HomeProps) {
       <nav className="navbar">
         <div className="navbar-brand">SchoolCollab</div>
         <div className="navbar-nav">
-          <span className="text-sm text-muted">Bienvenue !</span>
+          <span className="text-sm text-muted">Bienvenue {user?.prenom} !</span>
           <button onClick={handleLogout} className="btn btn-outline">
             Déconnexion
           </button>

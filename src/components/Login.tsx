@@ -1,12 +1,8 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { apiService, type LoginData } from "../services/api";
+import { useAuth } from "../contexts/AuthContext";
 
-interface LoginProps {
-  setUser: (user: { isProfileComplete: boolean }) => void;
-}
-
-export default function Login({ setUser }: LoginProps) {
+export default function Login() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -14,13 +10,13 @@ export default function Login({ setUser }: LoginProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
-    // Clear error when user starts typing
     if (error) setError(null);
   };
 
@@ -30,20 +26,9 @@ export default function Login({ setUser }: LoginProps) {
     setError(null);
 
     try {
-      const loginData: LoginData = {
-        email: formData.email,
-        password: formData.password,
-      };
-
-      const response = await apiService.login(loginData);
-
-      // Set user with profile completion status
-      setUser({
-        isProfileComplete: response.user.profile_completed || false,
-      });
-
-      // Navigate based on profile completion
-      if (response.user.profile_completed) {
+      const user = await login(formData.email, formData.password);
+      
+      if (user.profile_completed) {
         navigate("/");
       } else {
         navigate("/complete-profile");
