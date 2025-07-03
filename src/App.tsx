@@ -4,43 +4,24 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
-import { useState, useEffect } from "react";
 import Register from "./components/Register.tsx";
 import Login from "./components/Login.tsx";
 import CompleteProfile from "./components/CompleteProfile.tsx";
 import Home from "./components/Home.tsx";
 import SkillSwap from "./components/SkillSwap.tsx";
-import { apiService } from "./services/api";
+import { useAuth } from "./contexts/AuthContext";
 import "./App.css";
 
 function App() {
-  const [user, setUser] = useState<{ isProfileComplete: boolean } | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const { user, isAuthenticated, isLoading } = useAuth();
 
-  // Check authentication status on app load
-  useEffect(() => {
-    checkAuthStatus();
-  }, []);
-
-  const checkAuthStatus = async () => {
-    try {
-      // Try to get current user - if this fails, user is not authenticated
-      const userData = await apiService.getCurrentUser();
-      if (userData) {
-        // Now we can use the actual profile_completed field from backend
-        setUser({ isProfileComplete: userData.profile_completed });
-        setIsAuthenticated(true);
-      }
-    } catch (error) {
-      // User not authenticated or token expired
-      console.log("User not authenticated:", error);
-      setUser(null);
-      setIsAuthenticated(false);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  if (isLoading) {
+    return (
+      <div className="loading-container">
+        <div className="loading">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <Router>
@@ -51,13 +32,10 @@ function App() {
             element={
               isAuthenticated ? (
                 <Navigate
-                  to={user?.isProfileComplete ? "/" : "/complete-profile"}
+                  to={user?.profile_completed ? "/" : "/complete-profile"}
                 />
               ) : (
-                <Register
-                  setUser={setUser}
-                  setIsAuthenticated={setIsAuthenticated}
-                />
+                <Register />
               )
             }
           />
@@ -66,13 +44,10 @@ function App() {
             element={
               isAuthenticated ? (
                 <Navigate
-                  to={user?.isProfileComplete ? "/" : "/complete-profile"}
+                  to={user?.profile_completed ? "/" : "/complete-profile"}
                 />
               ) : (
-                <Login
-                  setUser={setUser}
-                  setIsAuthenticated={setIsAuthenticated}
-                />
+                <Login />
               )
             }
           />
@@ -80,8 +55,8 @@ function App() {
             path="/complete-profile"
             element={
               isAuthenticated ? (
-                user && !user.isProfileComplete ? (
-                  <CompleteProfile setUser={setUser} />
+                user && !user.profile_completed ? (
+                  <CompleteProfile />
                 ) : (
                   <Navigate to="/" />
                 )
@@ -94,12 +69,8 @@ function App() {
             path="/"
             element={
               isAuthenticated ? (
-                user?.isProfileComplete ? (
-                  <Home
-                    user={user}
-                    setUser={setUser}
-                    setIsAuthenticated={setIsAuthenticated}
-                  />
+                user?.profile_completed ? (
+                  <Home />
                 ) : (
                   <Navigate to="/complete-profile" />
                 )
@@ -112,7 +83,7 @@ function App() {
             path="/skill-swap"
             element={
               isAuthenticated ? (
-                user?.isProfileComplete ? (
+                user?.profile_completed ? (
                   <SkillSwap />
                 ) : (
                   <Navigate to="/complete-profile" />

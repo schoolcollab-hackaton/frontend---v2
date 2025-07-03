@@ -1,13 +1,9 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { apiService, type LoginData } from "../services/api";
+import { useAuth } from "../contexts/AuthContext";
 
-interface LoginProps {
-  setUser: (user: { isProfileComplete: boolean }) => void;
-  setIsAuthenticated: (isAuth: boolean) => void;
-}
-
-export default function Login({ setUser, setIsAuthenticated }: LoginProps) {
+export default function Login() {
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -31,23 +27,8 @@ export default function Login({ setUser, setIsAuthenticated }: LoginProps) {
     setError(null);
 
     try {
-      const loginData: LoginData = {
-        email: formData.email,
-        password: formData.password,
-      };
-
-      const response = await apiService.login(loginData);
-
-      // Use the actual profile_completed field from backend response
-      setUser({ isProfileComplete: response.user.profile_completed });
-      setIsAuthenticated(true);
-
-      // Navigate based on actual profile completion status
-      if (response.user.profile_completed) {
-        navigate("/");
-      } else {
-        navigate("/complete-profile");
-      }
+      await login(formData.email, formData.password);
+      navigate("/");
     } catch (error) {
       console.error("Login failed:", error);
       setError(error instanceof Error ? error.message : "Login failed");
