@@ -43,6 +43,9 @@ export default function Home() {
       case "Groupes d'Étude":
         navigate("/study-groups");
         break;
+      case "Mentorship":
+        navigate("/mentorship");
+        break;
       // Add other app routes here
       default:
         console.log(`Opening ${appName} app...`);
