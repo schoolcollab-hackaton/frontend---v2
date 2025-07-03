@@ -102,7 +102,7 @@ export default function Home() {
           <div className="welcome-section">
             <h1 className="welcome-title">
               Bienvenue,{" "}
-              <span className="user-highlight">{currentUser?.prenom}</span>
+              <span className="user-highlight"> Bienvenue {currentUser?.prenom} 🎉</span>
             </h1>
           </div>
 
