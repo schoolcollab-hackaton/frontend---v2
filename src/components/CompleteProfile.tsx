@@ -1,17 +1,15 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiService, type ProfileCompleteData } from "../services/api";
+import { useAuth } from "../contexts/AuthContext";
 import "./CompleteProfile.css";
-
-interface CompleteProfileProps {
-  setUser: (user: { isProfileComplete: boolean }) => void;
-}
 
 const filieres = ["WMD", "API", "BDAI", "CCSN"];
 const niveaux = [1, 2, 3, 4, 5];
 const competenceNiveaux = ["débutant", "intermédiaire", "avancé"];
 
-export default function CompleteProfile({ setUser }: CompleteProfileProps) {
+export default function CompleteProfile() {
+  const { updateUser } = useAuth();
   const [formData, setFormData] = useState({
     filiere: "",
     niveau: "" as number | "",
@@ -150,7 +148,7 @@ export default function CompleteProfile({ setUser }: CompleteProfileProps) {
       await apiService.completeProfile(profileData);
 
       // Update user state to mark profile as complete
-      setUser({ isProfileComplete: true });
+      updateUser({ profile_completed: true });
 
       // Navigate to home page
       navigate("/");

@@ -1,15 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiService } from "../services/api";
+import { useAuth } from "../contexts/AuthContext";
 import "./Home.css";
 
-interface HomeProps {
-  user: { isProfileComplete: boolean };
-  setUser: (user: { isProfileComplete: boolean } | null) => void;
-  setIsAuthenticated: (isAuth: boolean) => void;
-}
-
-export default function Home({ user, setUser, setIsAuthenticated }: HomeProps) {
+export default function Home() {
+  const { user, logout } = useAuth();
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeApp, setActiveApp] = useState<string | null>(null);
@@ -30,10 +26,9 @@ export default function Home({ user, setUser, setIsAuthenticated }: HomeProps) {
     }
   };
 
-  const handleLogout = () => {
-    apiService.logout();
-    setUser(null);
-    setIsAuthenticated(false);
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login");
   };
 
   const handleAppClick = (appName: string) => {
