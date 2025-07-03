@@ -99,6 +99,26 @@ export interface DemandeSoutienCreate {
     competence_id: number;
 }
 
+export interface ChatMessage {
+    message: string;
+    user_id: number;
+}
+
+export interface ChatResponse {
+    intent: string;
+    confidence: number;
+    message: string;
+    data?: any[];
+    suggestions?: string[];
+}
+
+export interface ChatHistory {
+    id: number;
+    question: string;
+    reponse: string;
+    date: string;
+}
+
 class ApiService {
     private async request<T>(
         endpoint: string,
@@ -313,6 +333,30 @@ class ApiService {
         return await this.request<void>(`/demande-soutien/${demandeId}`, {
             method: 'DELETE',
         });
+    }
+
+    // Chatbot methods
+    async sendChatMessage(message: string, userId: number): Promise<ChatResponse> {
+        const chatMessage: ChatMessage = {
+            message,
+            user_id: userId,
+        };
+        return await this.request<ChatResponse>('/chatbot/chat', {
+            method: 'POST',
+            body: JSON.stringify(chatMessage),
+        });
+    }
+
+    async getChatHistory(userId: number, limit: number = 10): Promise<ChatHistory[]> {
+        return await this.request<ChatHistory[]>(`/chatbot/history/${userId}?limit=${limit}`);
+    }
+
+    async getChatSuggestions(userId: number): Promise<{ suggestions: string[] }> {
+        return await this.request<{ suggestions: string[] }>(`/chatbot/suggestions/${userId}`);
+    }
+
+    async getChatIntents(): Promise<any> {
+        return await this.request<any>('/chatbot/intents');
     }
 }
 
