@@ -87,7 +87,7 @@ export default function Home() {
         <div className="apps-container">
           <div className="welcome-section">
             <h1 className="welcome-title">
-              <span className="user-highlight">{currentUser?.prenom}</span>
+              <span className="user-highlight"> Bienvenue {currentUser?.prenom} 🎉</span>
             </h1>
           </div>
 
