@@ -4,7 +4,6 @@ import {
   apiService,
   type SkillSwapRecommendation,
   type SwapRequest,
-  type DemandeSoutien,
 } from "../services/api";
 import "./SkillSwap.css";
 
@@ -86,7 +85,11 @@ export default function SkillSwap() {
     SkillSwapRecommendation[]
   >([]);
   const [swapRequests, setSwapRequests] = useState<SwapRequest[]>([]);
-  const [supportRequests, setSupportRequests] = useState<DemandeSoutien[]>([]);
+  const [sentRequests, setSentRequests] = useState<SwapRequest[]>([]);
+
+  // Filter states
+  const [selectedFiliere, setSelectedFiliere] = useState<string>("");
+  const [selectedNiveau, setSelectedNiveau] = useState<string>("");
 
   const navigate = useNavigate();
 
@@ -94,185 +97,46 @@ export default function SkillSwap() {
   useEffect(() => {
     loadRecommendations();
     loadSwapRequests();
-    loadSupportRequests();
+    loadSentRequests();
   }, []);
 
   const loadRecommendations = async () => {
     try {
       setIsLoading(true);
       setError(null);
+      console.log("=== LOADING RECOMMENDATIONS FROM BACKEND ===");
       const data = await apiService.getSkillSwapRecommendations(10);
+      console.log("Raw recommendations received from API:", data);
+      console.log("Number of recommendations:", data.length);
+
+      // Log each recommendation in detail
+      data.forEach((rec, index) => {
+        console.log(`=== RAW RECOMMENDATION ${index + 1} ===`);
+        console.log("Complete object:", rec);
+        console.log("Filiere:", rec.filiere, "Type:", typeof rec.filiere);
+        console.log("Niveau:", rec.niveau, "Type:", typeof rec.niveau);
+        console.log("Competences structure:", rec.competences);
+        console.log("Competences length:", rec.competences?.length);
+        if (rec.competences && rec.competences.length > 0) {
+          console.log("First competence:", rec.competences[0]);
+          console.log(
+            "Competence keys:",
+            Object.keys(rec.competences[0] || {})
+          );
+        }
+        console.log("Swap details:", rec.swap_details);
+        console.log("=== END RAW RECOMMENDATION ===");
+      });
+
       setRecommendations(data);
     } catch (err) {
       console.error("Failed to load recommendations:", err);
 
-      // Temporary: Handle auth errors gracefully with mock data
-      if (
-        err instanceof Error &&
-        (err.message.includes("401") || err.message.includes("auth"))
-      ) {
-        console.log("Using mock data for demonstration");
-
-        // Mock recommendations data for UI preview
-        const mockRecommendations: SkillSwapRecommendation[] = [
-          {
-            id: 1,
-            nom: "Dupont",
-            prenom: "Marie",
-            score: 85,
-            filiere: "WMD",
-            niveau: "4",
-            roles: [],
-            interests: ["JavaScript", "React", "UI/UX"],
-            competences: [
-              { React: "avancé" },
-              { JavaScript: "avancé" },
-              { "Node.js": "intermédiaire" },
-            ],
-            swap_score: 0.92,
-            swap_details: {
-              skills_they_offer: [
-                {
-                  skill: "React",
-                  their_level: 4,
-                  your_level: 2,
-                  benefit: "Improve from level 2 to 4",
-                },
-                {
-                  skill: "JavaScript",
-                  their_level: 4,
-                  your_level: 3,
-                  benefit: "Advanced techniques",
-                },
-              ],
-              skills_you_offer: [
-                {
-                  skill: "Python",
-                  your_level: 4,
-                  their_level: 1,
-                  benefit: "You can teach this skill",
-                },
-              ],
-              mutual_benefits: [
-                "Cross-domain collaboration between BDAI and WMD",
-                "Complementary frontend/backend skills",
-              ],
-              skill_gaps_filled: 2,
-              complementary_skills: 1,
-            },
-            recommendation_type: "skill_swap",
-          },
-          {
-            id: 2,
-            nom: "Martin",
-            prenom: "Alex",
-            score: 78,
-            filiere: "BDAI",
-            niveau: "3",
-            roles: [],
-            interests: ["Python", "Machine Learning", "Data Science"],
-            competences: [
-              { Python: "avancé" },
-              { "Machine Learning": "intermédiaire" },
-              { SQL: "avancé" },
-            ],
-            swap_score: 0.87,
-            swap_details: {
-              skills_they_offer: [
-                {
-                  skill: "Machine Learning",
-                  their_level: 3,
-                  your_level: 1,
-                  benefit: "Learn new skill",
-                },
-                {
-                  skill: "SQL",
-                  their_level: 4,
-                  your_level: 2,
-                  benefit: "Database expertise",
-                },
-              ],
-              skills_you_offer: [
-                {
-                  skill: "React",
-                  your_level: 3,
-                  their_level: 1,
-                  benefit: "Frontend development",
-                },
-              ],
-              mutual_benefits: [
-                "Data Science meets Web Development",
-                "Perfect for full-stack collaboration",
-              ],
-              skill_gaps_filled: 2,
-              complementary_skills: 1,
-            },
-            recommendation_type: "skill_swap",
-          },
-          {
-            id: 3,
-            nom: "Rousseau",
-            prenom: "Sophie",
-            score: 92,
-            filiere: "CCSN",
-            niveau: "5",
-            roles: [],
-            interests: ["Cybersecurity", "Network", "Ethical Hacking"],
-            competences: [
-              { Cybersecurity: "avancé" },
-              { "Network Security": "avancé" },
-              { Linux: "avancé" },
-            ],
-            swap_score: 0.83,
-            swap_details: {
-              skills_they_offer: [
-                {
-                  skill: "Cybersecurity",
-                  their_level: 4,
-                  your_level: 0,
-                  benefit: "New skill to learn",
-                },
-                {
-                  skill: "Linux",
-                  their_level: 4,
-                  your_level: 2,
-                  benefit: "System administration",
-                },
-              ],
-              skills_you_offer: [
-                {
-                  skill: "Web Development",
-                  your_level: 3,
-                  their_level: 1,
-                  benefit: "Modern web security",
-                },
-              ],
-              mutual_benefits: [
-                "Security meets Development",
-                "Build secure applications together",
-              ],
-              skill_gaps_filled: 2,
-              complementary_skills: 1,
-            },
-            recommendation_type: "skill_swap",
-          },
-        ];
-
-        setRecommendations(mockRecommendations);
-
-        // Show a notice that this is demo data
-        setTimeout(() => {
-          if (recommendations.length > 0) {
-            console.log("📝 Demo Mode: Affichage des données de démonstration");
-          }
-        }, 1000);
-      } else {
-        setError(
-          err instanceof Error
-            ? err.message
-            : "Erreur lors du chargement des recommandations"
-        );
-      }
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Erreur lors du chargement des recommandations"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -284,114 +148,17 @@ export default function SkillSwap() {
       setSwapRequests(received);
     } catch (err) {
       console.error("Failed to load swap requests:", err);
-
-      // Temporary: Handle auth errors gracefully with mock data
-      if (
-        err instanceof Error &&
-        (err.message.includes("401") || err.message.includes("auth"))
-      ) {
-        console.log("Using mock swap requests for demonstration");
-
-        // Mock swap requests for UI preview
-        const mockRequests: SwapRequest[] = [
-          {
-            id: 1,
-            sender_id: 5,
-            receiver_id: 1,
-            message:
-              "Salut ! J'aimerais apprendre React avec toi, en échange je peux t'enseigner Python et Django !",
-            status: "pending",
-            created_at: "2025-07-02T14:30:00Z",
-            skill_offered: "Python/Django",
-            skill_wanted: "React",
-          },
-          {
-            id: 2,
-            sender_id: 8,
-            receiver_id: 1,
-            message:
-              "Hello ! On pourrait faire un échange sur les bases de données ? J'ai de l'expérience en SQL et NoSQL.",
-            status: "accepted",
-            created_at: "2025-07-01T10:15:00Z",
-            skill_offered: "SQL/MongoDB",
-            skill_wanted: "JavaScript avancé",
-          },
-          {
-            id: 3,
-            sender_id: 12,
-            receiver_id: 1,
-            message:
-              "Intéressé par un échange UI/UX contre du développement mobile ?",
-            status: "pending",
-            created_at: "2025-07-03T09:45:00Z",
-            skill_offered: "UI/UX Design",
-            skill_wanted: "React Native",
-          },
-        ];
-
-        setSwapRequests(mockRequests);
-      } else {
-        setSwapRequests([]); // Show empty state for other errors
-      }
+      setSwapRequests([]); // Show empty state for other errors
     }
   };
 
-  const loadSupportRequests = async () => {
+  const loadSentRequests = async () => {
     try {
-      const myDemandes = await apiService.getMyDemandes();
-      setSupportRequests(myDemandes);
+      const sent = await apiService.getSentSwapRequests();
+      setSentRequests(sent);
     } catch (err) {
-      console.error("Failed to load support requests:", err);
-
-      // Temporary: Handle auth errors gracefully with mock data
-      if (
-        err instanceof Error &&
-        (err.message.includes("401") || err.message.includes("auth"))
-      ) {
-        console.log("Using mock support requests for demonstration");
-
-        // Mock support requests for UI preview
-        const mockSupportRequests: DemandeSoutien[] = [
-          {
-            id: 1,
-            demandeur_id: 1,
-            helper_id: 7,
-            competence_id: 3,
-            competence_name: "Machine Learning",
-            statut: "Pending",
-            dateDemande: "2025-07-01T09:30:00Z",
-          },
-          {
-            id: 2,
-            demandeur_id: 1,
-            competence_id: 8,
-            competence_name: "Docker & Kubernetes",
-            statut: "Approved",
-            dateDemande: "2025-06-28T14:15:00Z",
-          },
-          {
-            id: 3,
-            demandeur_id: 1,
-            helper_id: 12,
-            competence_id: 5,
-            competence_name: "UI/UX Design",
-            statut: "Completed",
-            dateDemande: "2025-06-25T11:20:00Z",
-          },
-          {
-            id: 4,
-            demandeur_id: 1,
-            competence_id: 15,
-            competence_name: "Cybersecurity Basics",
-            statut: "Pending",
-            dateDemande: "2025-07-03T16:45:00Z",
-          },
-        ];
-
-        setSupportRequests(mockSupportRequests);
-      } else {
-        setSupportRequests([]);
-      }
+      console.error("Failed to load sent requests:", err);
+      setSentRequests([]);
     }
   };
 
@@ -399,38 +166,145 @@ export default function SkillSwap() {
   const convertRecommendationToProfile = (
     rec: SkillSwapRecommendation
   ): Profile => {
-    // Extract skills from competences
-    const skills = rec.competences
-      .map((comp) => Object.keys(comp)[0] || "")
-      .filter(Boolean);
+    console.log("=== CONVERTING RECOMMENDATION TO PROFILE ===");
+    console.log("Raw recommendation data:", rec);
+    console.log("ID:", rec.id);
+    console.log("Name:", rec.prenom, rec.nom);
+    console.log("Filiere:", rec.filiere, "Type:", typeof rec.filiere);
+    console.log("Niveau:", rec.niveau, "Type:", typeof rec.niveau);
+    console.log("Score:", rec.score);
+    console.log("Swap Score:", rec.swap_score);
+    console.log("Competences:", rec.competences);
+    console.log("Interests:", rec.interests);
+    console.log("Roles:", rec.roles);
+    console.log("Swap Details:", rec.swap_details);
+
+    // Fix filiere enum values (remove "FiliereEnum." prefix)
+    const cleanFiliere =
+      typeof rec.filiere === "string"
+        ? rec.filiere.replace(/^FiliereEnum\./, "")
+        : rec.filiere;
+
+    // Fix niveau - convert to string if it's a number
+    const cleanNiveau = rec.niveau ? String(rec.niveau) : "Non spécifié";
+
+    // Extract skills from competences - handle different possible structures
+    let skills: string[] = [];
+
+    if (Array.isArray(rec.competences)) {
+      skills = rec.competences
+        .map((comp) => {
+          console.log("Processing competence:", comp);
+
+          // Handle different competence structures
+          if (typeof comp === "string") {
+            return comp;
+          } else if (typeof comp === "object" && comp !== null) {
+            // If it's an object with a "nom" property
+            if ("nom" in comp && typeof comp.nom === "string") {
+              return comp.nom;
+            }
+            // If it's an object like {"React": "avancé"}
+            const keys = Object.keys(comp);
+            if (keys.length > 0 && keys[0] !== "nom") {
+              return keys[0]; // Return the skill name (key)
+            }
+            // If it has only "nom" as key, it might be malformed
+            if (keys.length === 1 && keys[0] === "nom") {
+              return String(comp[keys[0]]);
+            }
+          }
+          return null;
+        })
+        .filter(
+          (skill): skill is string =>
+            skill !== null && skill !== "" && skill !== "nom"
+        );
+    }
+
+    console.log("Final extracted skills:", skills);
 
     // Generate avatar URL
     const avatar = `https://i.pravatar.cc/150?img=${rec.id}`;
 
-    // Create bio from swap details
-    const bio =
-      rec.swap_details?.mutual_benefits?.join(". ") ||
-      `Étudiant en ${rec.filiere || "formation"} avec un score de ${
+    // Create bio - fix enum values in mutual benefits
+    let bio = "";
+    if (
+      rec.swap_details?.mutual_benefits &&
+      Array.isArray(rec.swap_details.mutual_benefits)
+    ) {
+      bio = rec.swap_details.mutual_benefits
+        .map((benefit) =>
+          typeof benefit === "string"
+            ? benefit.replace(/FiliereEnum\./g, "") // Remove all FiliereEnum. prefixes
+            : String(benefit)
+        )
+        .join(". ");
+    }
+
+    // Fallback bio if no mutual benefits
+    if (!bio) {
+      bio = `Étudiant en ${cleanFiliere || "formation"} avec un score de ${
         rec.score
       }.`;
+    }
 
-    return {
+    console.log("Generated bio:", bio);
+
+    const profile = {
       id: rec.id,
       name: `${rec.prenom} ${rec.nom}`,
       avatar,
       skills,
-      level: rec.niveau || "Non spécifié",
-      filiere: rec.filiere || "Non spécifié",
+      level: cleanNiveau,
+      filiere: cleanFiliere || "Non spécifié",
       bio,
       rating: Math.min(5, Math.max(3, rec.swap_score || 4)),
       exchanges: Math.floor(rec.score / 10) || 1,
       swap_score: rec.swap_score,
       swap_details: rec.swap_details,
     };
+
+    console.log("Final converted profile:", profile);
+    console.log("=== END CONVERSION ===\n");
+
+    return profile;
   };
 
   // Convert profiles to display format
   const profiles = recommendations.map(convertRecommendationToProfile);
+
+  // Check if a profile has already been contacted
+  const isAlreadyContacted = (profileId: number) => {
+    return sentRequests.some((request) => request.receiver_id === profileId);
+  };
+
+  // Filter profiles to hide already contacted ones OR mark them as contacted
+  const getFilteredProfiles = () => {
+    let filteredProfiles = profiles.map((profile) => ({
+      ...profile,
+      isContacted: isAlreadyContacted(profile.id),
+    }));
+
+    // Apply filiere filter
+    if (selectedFiliere) {
+      filteredProfiles = filteredProfiles.filter(
+        (profile) => profile.filiere === selectedFiliere
+      );
+    }
+
+    // Apply niveau filter
+    if (selectedNiveau) {
+      filteredProfiles = filteredProfiles.filter(
+        (profile) => profile.level === selectedNiveau
+      );
+    }
+
+    return filteredProfiles;
+  };
+
+  // Get profiles with contact status
+  const profilesWithStatus = getFilteredProfiles();
 
   const handleAcceptRequest = async (request: SwapRequest) => {
     try {
@@ -484,8 +358,6 @@ export default function SkillSwap() {
       await apiService.sendSwapRequest({
         receiver_id: profile.id,
         message: requestData.message,
-        skill_offered: requestData.skillOffered,
-        skill_wanted: requestData.skillWanted,
       });
 
       // Show success with smooth notification instead of alert
@@ -515,28 +387,6 @@ export default function SkillSwap() {
     }, 3000);
   };
 
-  const handleCancelSupportRequest = async (requestId: number) => {
-    try {
-      await apiService.deleteDemande(requestId);
-      showNotification("Demande de support annulée", "success");
-      loadSupportRequests(); // Reload to update UI
-    } catch (err) {
-      console.error("Failed to cancel support request:", err);
-      showNotification("Erreur lors de l'annulation", "error");
-    }
-  };
-
-  const handleMarkCompleted = async (requestId: number) => {
-    try {
-      await apiService.updateDemande(requestId, { statut: "Completed" });
-      showNotification("Support marqué comme terminé", "success");
-      loadSupportRequests(); // Reload to update UI
-    } catch (err) {
-      console.error("Failed to mark as completed:", err);
-      showNotification("Erreur lors de la mise à jour", "error");
-    }
-  };
-
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
       <span
@@ -556,6 +406,10 @@ export default function SkillSwap() {
   const closeChat = () => {
     setIsChatOpen(false);
     setSelectedRequest(null);
+  };
+
+  const handleProfileClick = (profile: Profile) => {
+    setSelectedProfile(profile);
   };
 
   // Loading state
@@ -647,30 +501,78 @@ export default function SkillSwap() {
 
             {/* Filter Section */}
             <div className="filters">
-              <select className="filter-select">
+              <select
+                className="filter-select"
+                value={selectedFiliere}
+                onChange={(e) => setSelectedFiliere(e.target.value)}
+              >
                 <option value="">Toutes les filières</option>
                 <option value="WMD">WMD</option>
+                <option value="API">API</option>
                 <option value="BDAI">BDAI</option>
                 <option value="CCSN">CCSN</option>
               </select>
-              <select className="filter-select">
+              <select
+                className="filter-select"
+                value={selectedNiveau}
+                onChange={(e) => setSelectedNiveau(e.target.value)}
+              >
                 <option value="">Tous les niveaux</option>
+                <option value="1">1ère année</option>
+                <option value="2">2ème année</option>
                 <option value="3">3ème année</option>
                 <option value="4">4ème année</option>
                 <option value="5">5ème année</option>
               </select>
               <button
-                onClick={loadRecommendations}
-                className="btn btn-secondary"
+                onClick={() => {
+                  setSelectedFiliere("");
+                  setSelectedNiveau("");
+                }}
+                className="btn btn-secondary filter-reset-btn"
               >
-                🔄 Actualiser
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polyline points="1 4 1 10 7 10"></polyline>
+                  <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                </svg>
+                Réinitialiser
+              </button>
+              <button
+                onClick={loadRecommendations}
+                className="btn btn-secondary filter-refresh-btn"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M21 2v6h-6"></path>
+                  <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
+                  <path d="M3 22v-6h6"></path>
+                  <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
+                </svg>
+                Actualiser
               </button>
             </div>
 
             {/* Content */}
             {activeTab === "suggestions" ? (
               <div className="profiles-list">
-                {profiles.length === 0 ? (
+                {profilesWithStatus.length === 0 ? (
                   <div className="empty-recommendations">
                     <div className="empty-icon">🤖</div>
                     <h3>Aucune recommandation disponible</h3>
@@ -680,11 +582,13 @@ export default function SkillSwap() {
                     </p>
                   </div>
                 ) : (
-                  profiles.map((profile) => (
+                  profilesWithStatus.map((profile) => (
                     <div
                       key={profile.id}
-                      className="profile-card enhanced"
-                      onClick={() => setSelectedProfile(profile)}
+                      className={`profile-card enhanced ${
+                        profile.isContacted ? "contacted" : ""
+                      }`}
+                      onClick={() => handleProfileClick(profile)}
                     >
                       <div className="profile-header">
                         <img
@@ -706,22 +610,29 @@ export default function SkillSwap() {
                           {profile.swap_score && (
                             <div className="ai-score">
                               <span className="ai-badge">
-                                Score IA:{" "}
-                                {(profile.swap_score * 100).toFixed(0)}%
+                                Score IA: {profile.swap_score.toFixed(2)}
                               </span>
                             </div>
                           )}
                         </div>
                         <div className="profile-actions">
-                          <button
-                            className="quick-action-btn"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleSendSwapRequest(profile);
-                            }}
-                          >
-                            Échanger
-                          </button>
+                          {profile.isContacted ? (
+                            <div className="contacted-badge">
+                              <span className="contacted-text">
+                                ✓ Déjà demandé
+                              </span>
+                            </div>
+                          ) : (
+                            <button
+                              className="quick-action-btn"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSendSwapRequest(profile);
+                              }}
+                            >
+                              Échanger
+                            </button>
+                          )}
                         </div>
                       </div>
                       <div className="profile-bio">
@@ -738,7 +649,7 @@ export default function SkillSwap() {
                   ))
                 )}
               </div>
-            ) : activeTab === "requests" ? (
+            ) : (
               <div className="requests-list">
                 {swapRequests.length === 0 ? (
                   <div className="empty-requests">
@@ -762,11 +673,7 @@ export default function SkillSwap() {
                             </h3>
                             <div className="exchange-info">
                               <span className="exchange-offer">
-                                Offre: {request.skill_offered}
-                              </span>
-                              <span className="exchange-arrow">→</span>
-                              <span className="exchange-want">
-                                Cherche: {request.skill_wanted}
+                                Type: {request.type}
                               </span>
                             </div>
                           </div>
@@ -816,99 +723,12 @@ export default function SkillSwap() {
                   ))
                 )}
               </div>
-            ) : (
-              <div className="support-requests-list">
-                {supportRequests.length === 0 ? (
-                  <div className="empty-support-requests">
-                    <div className="empty-icon">🆘</div>
-                    <h3>Aucune demande de support</h3>
-                    <p>Vous n'avez pas encore de demandes de support.</p>
-                  </div>
-                ) : (
-                  supportRequests.map((request) => (
-                    <div key={request.id} className="request-card enhanced">
-                      <div className="request-header">
-                        <div className="support-icon">
-                          {request.statut === "Pending"
-                            ? "⏳"
-                            : request.statut === "Approved"
-                            ? "✅"
-                            : request.statut === "Completed"
-                            ? "🎉"
-                            : "❌"}
-                        </div>
-                        <div className="request-content">
-                          <div className="request-info">
-                            <h3 className="profile-name">
-                              Aide pour {request.competence_name}
-                            </h3>
-                            <div className="support-meta">
-                              <span className="support-date">
-                                Demandé le{" "}
-                                {new Date(
-                                  request.dateDemande
-                                ).toLocaleDateString()}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="request-status">
-                            <span
-                              className={`status-badge ${request.statut.toLowerCase()}`}
-                            >
-                              {request.statut === "Pending"
-                                ? "En attente"
-                                : request.statut === "Approved"
-                                ? "Approuvé"
-                                : request.statut === "Completed"
-                                ? "Terminé"
-                                : "Annulé"}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="support-description">
-                        <p>
-                          Recherche d'un mentor pour m'aider à progresser en{" "}
-                          {request.competence_name}
-                        </p>
-                        {request.helper_id && (
-                          <p className="helper-info">
-                            👨‍🏫 Helper assigné : Utilisateur #{request.helper_id}
-                          </p>
-                        )}
-                      </div>
-
-                      <div className="request-actions">
-                        {request.statut === "Pending" && (
-                          <button
-                            onClick={() =>
-                              handleCancelSupportRequest(request.id)
-                            }
-                            className="btn btn-secondary"
-                          >
-                            Annuler la demande
-                          </button>
-                        )}
-                        {request.statut === "Approved" && (
-                          <button
-                            onClick={() => handleMarkCompleted(request.id)}
-                            className="btn btn-primary"
-                          >
-                            Marquer comme terminé
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
             )}
           </div>
 
           {/* Right section - Profile Details */}
           <div className="skillswap-right">
-            {selectedProfile && (
+            {selectedProfile ? (
               <div className="profile-details enhanced">
                 <div className="profile-details-header">
                   <img
@@ -938,7 +758,7 @@ export default function SkillSwap() {
                     {selectedProfile.swap_score && (
                       <div className="stat-item">
                         <span className="stat-number">
-                          {(selectedProfile.swap_score * 100).toFixed(0)}%
+                          {selectedProfile.swap_score.toFixed(2)}
                         </span>
                         <span className="stat-label">Match IA</span>
                       </div>
@@ -969,39 +789,52 @@ export default function SkillSwap() {
                     </h3>
                     <div className="swap-benefits">
                       {selectedProfile.swap_details.mutual_benefits?.map(
-                        (benefit: string, index: number) => (
-                          <div key={index} className="benefit-item">
-                            <span className="benefit-icon">✨</span>
-                            <span className="benefit-text">{benefit}</span>
-                          </div>
-                        )
+                        (benefit: string, index: number) => {
+                          // Clean enum values from benefit text
+                          const cleanBenefit =
+                            typeof benefit === "string"
+                              ? benefit.replace(/FiliereEnum\./g, "")
+                              : String(benefit);
+
+                          return (
+                            <div key={index} className="benefit-item">
+                              <span className="benefit-icon">✨</span>
+                              <span className="benefit-text">
+                                {cleanBenefit}
+                              </span>
+                            </div>
+                          );
+                        }
                       )}
                     </div>
                   </div>
                 )}
 
                 <div className="action-buttons">
-                  <button
-                    className="btn btn-primary full-width"
-                    onClick={() => handleSendSwapRequest(selectedProfile)}
-                  >
-                    Demander un échange
-                  </button>
-                  <button className="btn btn-secondary full-width">
-                    Voir le profil complet
-                  </button>
+                  {isAlreadyContacted(selectedProfile.id) ? (
+                    <div className="contacted-badge-large">
+                      <span className="contacted-text">✓ Déjà demandé</span>
+                    </div>
+                  ) : (
+                    <button
+                      className="btn btn-primary full-width"
+                      onClick={() => handleSendSwapRequest(selectedProfile)}
+                    >
+                      Demander un échange
+                    </button>
+                  )}
                 </div>
               </div>
-            )}
-
-            {!selectedProfile && (
-              <div className="empty-state">
-                <div className="empty-icon">🤝</div>
-                <h3>Recommandations IA</h3>
-                <p>
-                  Sélectionnez un profil recommandé par notre IA pour voir
-                  l'analyse détaillée des échanges possibles.
-                </p>
+            ) : (
+              <div className="profile-placeholder">
+                <div className="placeholder-content">
+                  <div className="placeholder-icon">👤</div>
+                  <h3>Sélectionnez un profil</h3>
+                  <p>
+                    Cliquez sur un profil pour voir ses détails et l'analyse IA
+                    des échanges possibles.
+                  </p>
+                </div>
               </div>
             )}
           </div>
@@ -1080,7 +913,7 @@ export default function SkillSwap() {
         </div>
       )}
 
-      {/* Swap Request Modal (simplified for demo) */}
+      {/* Swap Request Modal (updated for backend integration) */}
       {swapRequestModal.isOpen && swapRequestModal.profile && (
         <div className="swap-request-modal">
           <div className="modal-content">
@@ -1099,29 +932,49 @@ export default function SkillSwap() {
             </p>
             <div className="modal-skills">
               <div className="skill-offered">
-                <strong>Compétence proposée :</strong>{" "}
-                {
-                  swapRequestModal.profile.swap_details.skills_they_offer[0]
-                    .skill
-                }
+                <strong>Profil:</strong> {swapRequestModal.profile.filiere} •{" "}
+                {swapRequestModal.profile.level}
               </div>
               <div className="skill-wanted">
-                <strong>Compétence recherchée :</strong>{" "}
-                {
-                  swapRequestModal.profile.swap_details.skills_you_offer[0]
-                    .skill
-                }
+                <strong>Compétences:</strong>{" "}
+                {swapRequestModal.profile.skills.join(", ")}
               </div>
             </div>
+            <textarea
+              placeholder="Écrivez votre message d'échange..."
+              className="modal-message-input"
+              id="swap-message"
+              rows={4}
+              style={{
+                width: "100%",
+                padding: "0.75rem",
+                border: "1px solid var(--border-color)",
+                borderRadius: "8px",
+                resize: "vertical",
+                fontFamily: "inherit",
+                fontSize: "0.9rem",
+                margin: "1rem 0",
+              }}
+            />
             <div className="modal-actions">
               <button
                 className="btn btn-primary"
                 onClick={() => {
-                  handleSendSwapRequest(swapRequestModal.profile);
+                  const messageInput = document.getElementById(
+                    "swap-message"
+                  ) as HTMLTextAreaElement;
+                  const message =
+                    messageInput?.value || "Demande d'échange de compétences";
+
+                  confirmSwapRequest(swapRequestModal.profile!, {
+                    message,
+                    skillOffered: "",
+                    skillWanted: "",
+                  });
                   setSwapRequestModal({ isOpen: false, profile: null });
                 }}
               >
-                Confirmer l'échange
+                Envoyer la demande
               </button>
               <button
                 className="btn btn-secondary"
