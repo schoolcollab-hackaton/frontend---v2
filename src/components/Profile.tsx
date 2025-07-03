@@ -141,7 +141,7 @@ export default function Profile() {
                     <span className="info-label">Niveau</span>
                     <span className="info-value">
                       {currentUser.niveau
-                        ? `Niveau ${currentUser.niveau}`
+                        ? `${currentUser.niveau }ième année`
                         : "Non spécifié"}
                     </span>
                   </div>
