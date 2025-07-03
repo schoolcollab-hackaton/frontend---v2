@@ -12,6 +12,7 @@ import SkillSwap from "./components/SkillSwap.tsx";
 import AiChatbot from "./components/AiChatbot.tsx";
 import StudyGroups from "./components/StudyGroups.tsx";
 import Mentorship from "./components/Mentorship.tsx";
+import AcademicSupport from "./components/AcademicSupport.tsx";
 import { useAuth } from "./contexts/AuthContext";
 import "./App.css";
 
@@ -130,6 +131,20 @@ function App() {
               isAuthenticated ? (
                 user?.profile_completed ? (
                   <Mentorship />
+                ) : (
+                  <Navigate to="/complete-profile" />
+                )
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
+          />
+          <Route
+            path="/academic-support"
+            element={
+              isAuthenticated ? (
+                user?.profile_completed ? (
+                  <AcademicSupport />
                 ) : (
                   <Navigate to="/complete-profile" />
                 )
