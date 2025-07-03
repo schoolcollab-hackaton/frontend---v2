@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiService, type ProfileCompleteData } from "../services/api";
 import { useAuth } from "../contexts/AuthContext";
+import { ALL_COMPETENCES, CENTRES_INTERETS, getCompetencesForFiliere } from "../constants/profileData";
 import "./CompleteProfile.css";
 
 const filieres = ["WMD", "API", "BDAI", "CCSN"];
@@ -20,14 +21,9 @@ export default function CompleteProfile() {
     linkedin: "",
   });
 
-  // State for dynamic data from database
-  const [competences, setCompetences] = useState<
-    Array<{ nom: string; description: string }>
-  >([]);
-  const [centresInteret, setCentresInteret] = useState<
-    Array<{ titre: string }>
-  >([]);
-  const [isLoadingData, setIsLoadingData] = useState(true);
+  // Use static data from constants - show filiere-specific competences if filiere is selected
+  const competences = formData.filiere ? getCompetencesForFiliere(formData.filiere) : ALL_COMPETENCES;
+  const centresInteret = CENTRES_INTERETS;
 
   // Search and filter states
   const [competenceSearch, setCompetenceSearch] = useState("");
@@ -37,28 +33,7 @@ export default function CompleteProfile() {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  // Fetch competences and centres d'intérêt from database on component mount
-  useEffect(() => {
-    const fetchProfileData = async () => {
-      try {
-        setIsLoadingData(true);
-        const [competencesData, centresData] = await Promise.all([
-          apiService.getCompetences(),
-          apiService.getCentresInteret(),
-        ]);
-
-        setCompetences(competencesData);
-        setCentresInteret(centresData);
-      } catch (err) {
-        console.error("Failed to fetch profile data:", err);
-        setError("Erreur lors du chargement des données du profil");
-      } finally {
-        setIsLoadingData(false);
-      }
-    };
-
-    fetchProfileData();
-  }, []);
+  // No need to fetch data - using static constants
 
   // Filter competences based on search
   const filteredCompetences = competences.filter((comp) =>
@@ -164,19 +139,7 @@ export default function CompleteProfile() {
     }
   };
 
-  // Show loading state while fetching data
-  if (isLoadingData) {
-    return (
-      <div className="profile-layout">
-        <div className="profile-card">
-          <div className="auth-header">
-            <h1 className="auth-title">Chargement...</h1>
-            <p className="auth-subtitle">Récupération des données du profil</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // No loading needed - using static data
 
   return (
     <div className="profile-layout">
