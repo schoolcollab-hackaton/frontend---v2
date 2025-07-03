@@ -86,7 +86,11 @@ export default function Home() {
           </div>
 
           <div className="navbar-actions">
-            <div className="user-profile">
+            <div 
+              className="user-profile"
+              onClick={() => navigate("/profile")}
+              style={{ cursor: "pointer" }}
+            >
               <User size={20} />
             </div>
 
