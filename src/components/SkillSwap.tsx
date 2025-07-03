@@ -87,6 +87,10 @@ export default function SkillSwap() {
   const [swapRequests, setSwapRequests] = useState<SwapRequest[]>([]);
   const [sentRequests, setSentRequests] = useState<SwapRequest[]>([]);
 
+  // Filter states
+  const [selectedFiliere, setSelectedFiliere] = useState<string>("");
+  const [selectedNiveau, setSelectedNiveau] = useState<string>("");
+
   const navigate = useNavigate();
 
   // Load recommendations and requests from backend
@@ -277,10 +281,26 @@ export default function SkillSwap() {
 
   // Filter profiles to hide already contacted ones OR mark them as contacted
   const getFilteredProfiles = () => {
-    return profiles.map((profile) => ({
+    let filteredProfiles = profiles.map((profile) => ({
       ...profile,
       isContacted: isAlreadyContacted(profile.id),
     }));
+
+    // Apply filiere filter
+    if (selectedFiliere) {
+      filteredProfiles = filteredProfiles.filter(
+        (profile) => profile.filiere === selectedFiliere
+      );
+    }
+
+    // Apply niveau filter
+    if (selectedNiveau) {
+      filteredProfiles = filteredProfiles.filter(
+        (profile) => profile.level === selectedNiveau
+      );
+    }
+
+    return filteredProfiles;
   };
 
   // Get profiles with contact status
@@ -481,23 +501,71 @@ export default function SkillSwap() {
 
             {/* Filter Section */}
             <div className="filters">
-              <select className="filter-select">
+              <select
+                className="filter-select"
+                value={selectedFiliere}
+                onChange={(e) => setSelectedFiliere(e.target.value)}
+              >
                 <option value="">Toutes les filières</option>
                 <option value="WMD">WMD</option>
+                <option value="API">API</option>
                 <option value="BDAI">BDAI</option>
                 <option value="CCSN">CCSN</option>
               </select>
-              <select className="filter-select">
+              <select
+                className="filter-select"
+                value={selectedNiveau}
+                onChange={(e) => setSelectedNiveau(e.target.value)}
+              >
                 <option value="">Tous les niveaux</option>
+                <option value="1">1ère année</option>
+                <option value="2">2ème année</option>
                 <option value="3">3ème année</option>
                 <option value="4">4ème année</option>
                 <option value="5">5ème année</option>
               </select>
               <button
-                onClick={loadRecommendations}
-                className="btn btn-secondary"
+                onClick={() => {
+                  setSelectedFiliere("");
+                  setSelectedNiveau("");
+                }}
+                className="btn btn-secondary filter-reset-btn"
               >
-                🔄 Actualiser
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polyline points="1 4 1 10 7 10"></polyline>
+                  <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                </svg>
+                Réinitialiser
+              </button>
+              <button
+                onClick={loadRecommendations}
+                className="btn btn-secondary filter-refresh-btn"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M21 2v6h-6"></path>
+                  <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
+                  <path d="M3 22v-6h6"></path>
+                  <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
+                </svg>
+                Actualiser
               </button>
             </div>
 
@@ -660,7 +728,7 @@ export default function SkillSwap() {
 
           {/* Right section - Profile Details */}
           <div className="skillswap-right">
-            {selectedProfile && (
+            {selectedProfile ? (
               <div className="profile-details enhanced">
                 <div className="profile-details-header">
                   <img
@@ -743,27 +811,30 @@ export default function SkillSwap() {
                 )}
 
                 <div className="action-buttons">
-                  <button
-                    className="btn btn-primary full-width"
-                    onClick={() => handleSendSwapRequest(selectedProfile)}
-                  >
-                    Demander un échange
-                  </button>
-                  <button className="btn btn-secondary full-width">
-                    Voir le profil complet
-                  </button>
+                  {isAlreadyContacted(selectedProfile.id) ? (
+                    <div className="contacted-badge-large">
+                      <span className="contacted-text">✓ Déjà demandé</span>
+                    </div>
+                  ) : (
+                    <button
+                      className="btn btn-primary full-width"
+                      onClick={() => handleSendSwapRequest(selectedProfile)}
+                    >
+                      Demander un échange
+                    </button>
+                  )}
                 </div>
               </div>
-            )}
-
-            {!selectedProfile && (
-              <div className="empty-state">
-                <div className="empty-icon">🤝</div>
-                <h3>Recommandations IA</h3>
-                <p>
-                  Sélectionnez un profil recommandé par notre IA pour voir
-                  l'analyse détaillée des échanges possibles.
-                </p>
+            ) : (
+              <div className="profile-placeholder">
+                <div className="placeholder-content">
+                  <div className="placeholder-icon">👤</div>
+                  <h3>Sélectionnez un profil</h3>
+                  <p>
+                    Cliquez sur un profil pour voir ses détails et l'analyse IA
+                    des échanges possibles.
+                  </p>
+                </div>
               </div>
             )}
           </div>
