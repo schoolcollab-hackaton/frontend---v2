@@ -4,7 +4,6 @@ import {
   apiService,
   type SkillSwapRecommendation,
   type SwapRequest,
-  type DemandeSoutien,
 } from "../services/api";
 import "./SkillSwap.css";
 
@@ -86,7 +85,6 @@ export default function SkillSwap() {
     SkillSwapRecommendation[]
   >([]);
   const [swapRequests, setSwapRequests] = useState<SwapRequest[]>([]);
-  const [supportRequests, setSupportRequests] = useState<DemandeSoutien[]>([]);
 
   const navigate = useNavigate();
 
@@ -94,7 +92,6 @@ export default function SkillSwap() {
   useEffect(() => {
     loadRecommendations();
     loadSwapRequests();
-    loadSupportRequests();
   }, []);
 
   const loadRecommendations = async () => {
@@ -336,65 +333,6 @@ export default function SkillSwap() {
     }
   };
 
-  const loadSupportRequests = async () => {
-    try {
-      const myDemandes = await apiService.getMyDemandes();
-      setSupportRequests(myDemandes);
-    } catch (err) {
-      console.error("Failed to load support requests:", err);
-
-      // Temporary: Handle auth errors gracefully with mock data
-      if (
-        err instanceof Error &&
-        (err.message.includes("401") || err.message.includes("auth"))
-      ) {
-        console.log("Using mock support requests for demonstration");
-
-        // Mock support requests for UI preview
-        const mockSupportRequests: DemandeSoutien[] = [
-          {
-            id: 1,
-            demandeur_id: 1,
-            helper_id: 7,
-            competence_id: 3,
-            competence_name: "Machine Learning",
-            statut: "Pending",
-            dateDemande: "2025-07-01T09:30:00Z",
-          },
-          {
-            id: 2,
-            demandeur_id: 1,
-            competence_id: 8,
-            competence_name: "Docker & Kubernetes",
-            statut: "Approved",
-            dateDemande: "2025-06-28T14:15:00Z",
-          },
-          {
-            id: 3,
-            demandeur_id: 1,
-            helper_id: 12,
-            competence_id: 5,
-            competence_name: "UI/UX Design",
-            statut: "Completed",
-            dateDemande: "2025-06-25T11:20:00Z",
-          },
-          {
-            id: 4,
-            demandeur_id: 1,
-            competence_id: 15,
-            competence_name: "Cybersecurity Basics",
-            statut: "Pending",
-            dateDemande: "2025-07-03T16:45:00Z",
-          },
-        ];
-
-        setSupportRequests(mockSupportRequests);
-      } else {
-        setSupportRequests([]);
-      }
-    }
-  };
-
   // Convert backend recommendation to frontend profile format
   const convertRecommendationToProfile = (
     rec: SkillSwapRecommendation
@@ -513,28 +451,6 @@ export default function SkillSwap() {
     setTimeout(() => {
       notification.remove();
     }, 3000);
-  };
-
-  const handleCancelSupportRequest = async (requestId: number) => {
-    try {
-      await apiService.deleteDemande(requestId);
-      showNotification("Demande de support annulée", "success");
-      loadSupportRequests(); // Reload to update UI
-    } catch (err) {
-      console.error("Failed to cancel support request:", err);
-      showNotification("Erreur lors de l'annulation", "error");
-    }
-  };
-
-  const handleMarkCompleted = async (requestId: number) => {
-    try {
-      await apiService.updateDemande(requestId, { statut: "Completed" });
-      showNotification("Support marqué comme terminé", "success");
-      loadSupportRequests(); // Reload to update UI
-    } catch (err) {
-      console.error("Failed to mark as completed:", err);
-      showNotification("Erreur lors de la mise à jour", "error");
-    }
   };
 
   const renderStars = (rating: number) => {
@@ -738,7 +654,7 @@ export default function SkillSwap() {
                   ))
                 )}
               </div>
-            ) : activeTab === "requests" ? (
+            ) : (
               <div className="requests-list">
                 {swapRequests.length === 0 ? (
                   <div className="empty-requests">
@@ -812,93 +728,6 @@ export default function SkillSwap() {
                           💬 Ouvrir le chat
                         </button>
                       )}
-                    </div>
-                  ))
-                )}
-              </div>
-            ) : (
-              <div className="support-requests-list">
-                {supportRequests.length === 0 ? (
-                  <div className="empty-support-requests">
-                    <div className="empty-icon">🆘</div>
-                    <h3>Aucune demande de support</h3>
-                    <p>Vous n'avez pas encore de demandes de support.</p>
-                  </div>
-                ) : (
-                  supportRequests.map((request) => (
-                    <div key={request.id} className="request-card enhanced">
-                      <div className="request-header">
-                        <div className="support-icon">
-                          {request.statut === "Pending"
-                            ? "⏳"
-                            : request.statut === "Approved"
-                            ? "✅"
-                            : request.statut === "Completed"
-                            ? "🎉"
-                            : "❌"}
-                        </div>
-                        <div className="request-content">
-                          <div className="request-info">
-                            <h3 className="profile-name">
-                              Aide pour {request.competence_name}
-                            </h3>
-                            <div className="support-meta">
-                              <span className="support-date">
-                                Demandé le{" "}
-                                {new Date(
-                                  request.dateDemande
-                                ).toLocaleDateString()}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="request-status">
-                            <span
-                              className={`status-badge ${request.statut.toLowerCase()}`}
-                            >
-                              {request.statut === "Pending"
-                                ? "En attente"
-                                : request.statut === "Approved"
-                                ? "Approuvé"
-                                : request.statut === "Completed"
-                                ? "Terminé"
-                                : "Annulé"}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="support-description">
-                        <p>
-                          Recherche d'un mentor pour m'aider à progresser en{" "}
-                          {request.competence_name}
-                        </p>
-                        {request.helper_id && (
-                          <p className="helper-info">
-                            👨‍🏫 Helper assigné : Utilisateur #{request.helper_id}
-                          </p>
-                        )}
-                      </div>
-
-                      <div className="request-actions">
-                        {request.statut === "Pending" && (
-                          <button
-                            onClick={() =>
-                              handleCancelSupportRequest(request.id)
-                            }
-                            className="btn btn-secondary"
-                          >
-                            Annuler la demande
-                          </button>
-                        )}
-                        {request.statut === "Approved" && (
-                          <button
-                            onClick={() => handleMarkCompleted(request.id)}
-                            className="btn btn-primary"
-                          >
-                            Marquer comme terminé
-                          </button>
-                        )}
-                      </div>
                     </div>
                   ))
                 )}
