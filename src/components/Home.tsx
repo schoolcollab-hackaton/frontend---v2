@@ -1,11 +1,21 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  GraduationCap,
+  LogOut,
+  RefreshCw,
+  Users,
+  Bot,
+  BookOpen,
+  HelpCircle,
+  User,
+} from "lucide-react";
 import { apiService } from "../services/api";
 import { useAuth } from "../contexts/AuthContext";
 import "./Home.css";
 
 export default function Home() {
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeApp, setActiveApp] = useState<string | null>(null);
@@ -71,21 +81,17 @@ export default function Home() {
       <nav className="navbar">
         <div className="navbar-content">
           <div className="brand-logo">
-            <span className="brand-emoji">🎓</span>
+            <GraduationCap className="brand-icon" size={24} />
             <span className="brand-text">SchoolCollab</span>
           </div>
 
           <div className="navbar-actions">
             <div className="user-profile">
-              <img
-                src={currentUser?.avatar || "https://via.placeholder.com/32"}
-                alt="Profile"
-                className="user-avatar"
-              />
+              <User size={20} />
             </div>
 
             <button onClick={handleLogout} className="btn-icon">
-              <span>↪️</span>
+              <LogOut size={20} />
             </button>
           </div>
         </div>
@@ -95,6 +101,7 @@ export default function Home() {
         <div className="apps-container">
           <div className="welcome-section">
             <h1 className="welcome-title">
+              Bienvenue,{" "}
               <span className="user-highlight">{currentUser?.prenom}</span>
             </h1>
           </div>
@@ -107,7 +114,7 @@ export default function Home() {
               onClick={() => handleAppClick("Skill Swap")}
             >
               <div className="app-icon-wrapper skill-swap">
-                <span>🔄</span>
+                <RefreshCw size={32} />
               </div>
               <h3 className="app-name">Skill Swap</h3>
             </div>
@@ -119,7 +126,7 @@ export default function Home() {
               onClick={() => handleAppClick("Mentorship")}
             >
               <div className="app-icon-wrapper mentorship">
-                <span>🤝</span>
+                <Users size={32} />
               </div>
               <h3 className="app-name">Mentorship</h3>
             </div>
@@ -131,7 +138,7 @@ export default function Home() {
               onClick={() => handleAppClick("Assistant IA")}
             >
               <div className="app-icon-wrapper chatbot">
-                <span>🤖</span>
+                <Bot size={32} />
               </div>
               <h3 className="app-name">Assistant IA</h3>
             </div>
@@ -143,7 +150,7 @@ export default function Home() {
               onClick={() => handleAppClick("Groupes d'Étude")}
             >
               <div className="app-icon-wrapper study-groups">
-                <span>📚</span>
+                <BookOpen size={32} />
               </div>
               <h3 className="app-name">Groupes d'Étude</h3>
             </div>
@@ -155,7 +162,7 @@ export default function Home() {
               onClick={() => handleAppClick("Soutien Académique")}
             >
               <div className="app-icon-wrapper academic-support">
-                <span>📖</span>
+                <HelpCircle size={32} />
               </div>
               <h3 className="app-name">Soutien Académique</h3>
             </div>
