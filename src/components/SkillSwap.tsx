@@ -85,6 +85,7 @@ export default function SkillSwap() {
     SkillSwapRecommendation[]
   >([]);
   const [swapRequests, setSwapRequests] = useState<SwapRequest[]>([]);
+  const [sentRequests, setSentRequests] = useState<SwapRequest[]>([]);
 
   const navigate = useNavigate();
 
@@ -92,6 +93,7 @@ export default function SkillSwap() {
   useEffect(() => {
     loadRecommendations();
     loadSwapRequests();
+    loadSentRequests();
   }, []);
 
   const loadRecommendations = async () => {
@@ -143,6 +145,16 @@ export default function SkillSwap() {
     } catch (err) {
       console.error("Failed to load swap requests:", err);
       setSwapRequests([]); // Show empty state for other errors
+    }
+  };
+
+  const loadSentRequests = async () => {
+    try {
+      const sent = await apiService.getSentSwapRequests();
+      setSentRequests(sent);
+    } catch (err) {
+      console.error("Failed to load sent requests:", err);
+      setSentRequests([]);
     }
   };
 
@@ -257,6 +269,22 @@ export default function SkillSwap() {
 
   // Convert profiles to display format
   const profiles = recommendations.map(convertRecommendationToProfile);
+
+  // Check if a profile has already been contacted
+  const isAlreadyContacted = (profileId: number) => {
+    return sentRequests.some((request) => request.receiver_id === profileId);
+  };
+
+  // Filter profiles to hide already contacted ones OR mark them as contacted
+  const getFilteredProfiles = () => {
+    return profiles.map((profile) => ({
+      ...profile,
+      isContacted: isAlreadyContacted(profile.id),
+    }));
+  };
+
+  // Get profiles with contact status
+  const profilesWithStatus = getFilteredProfiles();
 
   const handleAcceptRequest = async (request: SwapRequest) => {
     try {
@@ -476,7 +504,7 @@ export default function SkillSwap() {
             {/* Content */}
             {activeTab === "suggestions" ? (
               <div className="profiles-list">
-                {profiles.length === 0 ? (
+                {profilesWithStatus.length === 0 ? (
                   <div className="empty-recommendations">
                     <div className="empty-icon">🤖</div>
                     <h3>Aucune recommandation disponible</h3>
@@ -486,10 +514,12 @@ export default function SkillSwap() {
                     </p>
                   </div>
                 ) : (
-                  profiles.map((profile) => (
+                  profilesWithStatus.map((profile) => (
                     <div
                       key={profile.id}
-                      className="profile-card enhanced"
+                      className={`profile-card enhanced ${
+                        profile.isContacted ? "contacted" : ""
+                      }`}
                       onClick={() => handleProfileClick(profile)}
                     >
                       <div className="profile-header">
@@ -518,15 +548,23 @@ export default function SkillSwap() {
                           )}
                         </div>
                         <div className="profile-actions">
-                          <button
-                            className="quick-action-btn"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleSendSwapRequest(profile);
-                            }}
-                          >
-                            Échanger
-                          </button>
+                          {profile.isContacted ? (
+                            <div className="contacted-badge">
+                              <span className="contacted-text">
+                                ✓ Déjà demandé
+                              </span>
+                            </div>
+                          ) : (
+                            <button
+                              className="quick-action-btn"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSendSwapRequest(profile);
+                              }}
+                            >
+                              Échanger
+                            </button>
+                          )}
                         </div>
                       </div>
                       <div className="profile-bio">
