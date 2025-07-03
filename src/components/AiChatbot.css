@@ -1,9 +1,103 @@
+/* AiChatbot Navbar Styles */
+.chatbot-layout {
+  min-height: 100vh;
+  background-color: var(--background);
+}
+
+.chatbot-navbar {
+  background: linear-gradient(135deg, #60a5fa 0%, #2563eb 100%);
+  color: white;
+  padding: 1rem 0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+
+.chatbot-navbar .navbar-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 1rem;
+}
+
+.chatbot-navbar .navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.chatbot-navbar .back-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.chatbot-navbar .back-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.chatbot-navbar .page-title h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.chatbot-navbar .page-title p {
+  margin: 0;
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.chatbot-navbar .navbar-right {
+  display: flex;
+  align-items: center;
+}
+
+.chatbot-navbar .user-stats {
+  display: flex;
+  gap: 2rem;
+}
+
+.chatbot-navbar .stat {
+  text-align: center;
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
+  min-width: auto;
+}
+
+.chatbot-navbar .stat-number {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: white;
+}
+
+.chatbot-navbar .stat-label {
+  font-size: 0.8rem;
+  opacity: 0.9;
+  color: white;
+}
+
+.chatbot-main {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 90px 0 0;
+}
+
 .chatbot-container {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  max-width: 800px;
-  margin: 0 auto;
+  height: calc(100vh - 90px);
   background: var(--background);
 }
 
@@ -172,10 +266,14 @@
 }
 
 @keyframes typing {
-  0%, 80%, 100% {
+
+  0%,
+  80%,
+  100% {
     transform: scale(0.8);
     opacity: 0.5;
   }
+
   40% {
     transform: scale(1);
     opacity: 1;
@@ -451,51 +549,51 @@
   .chatbot-container {
     height: 100vh;
   }
-  
+
   .chatbot-header {
     padding: 0.75rem;
   }
-  
+
   .chatbot-title h1 {
     font-size: 1.125rem;
   }
-  
+
   .chatbot-messages {
     padding: 0.75rem;
   }
-  
+
   .message-content {
     max-width: 85%;
   }
-  
+
   .welcome-message {
     padding: 1rem;
   }
-  
+
   .welcome-icon {
     font-size: 2rem;
   }
-  
+
   .suggestions {
     padding: 0.75rem;
   }
-  
+
   .chatbot-input {
     padding: 0.75rem;
   }
-  
+
   .skill-swap-card {
     padding: 0.75rem;
   }
-  
+
   .partner-info h4 {
     font-size: 1rem;
   }
-  
+
   .skills-section h5 {
     font-size: 0.85rem;
   }
-  
+
   .skills-list li {
     font-size: 0.8rem;
   }

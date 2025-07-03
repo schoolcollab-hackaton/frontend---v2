@@ -1,7 +1,99 @@
+.study-groups-navbar {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  padding: 1rem 0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+
+.study-groups-navbar .navbar-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 1rem;
+}
+
+.study-groups-navbar .navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.study-groups-navbar .back-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.study-groups-navbar .back-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.study-groups-navbar .page-title h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.study-groups-navbar .page-title p {
+  margin: 0;
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.study-groups-navbar .navbar-right {
+  display: flex;
+  align-items: center;
+}
+
+.study-groups-navbar .user-stats {
+  display: flex;
+  gap: 2rem;
+}
+
+.study-groups-navbar .stat {
+  text-align: center;
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
+  min-width: auto;
+}
+
+.study-groups-navbar .stat-number {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+}
+
+.study-groups-navbar .stat-label {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.study-groups-layout {
+  min-height: 100vh;
+  background: var(--background);
+}
+
 .study-groups-container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
+  padding-top: 8rem;
+  /* Account for fixed navbar */
   min-height: 100vh;
   background: var(--background);
 }
@@ -365,57 +457,57 @@
   .study-groups-container {
     padding: 1rem;
   }
-  
+
   .study-groups-title {
     font-size: 2rem;
   }
-  
+
   .study-groups-filters {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .search-container,
   .filter-container {
     min-width: auto;
   }
-  
+
   .study-groups-stats {
     gap: 1rem;
   }
-  
+
   .stat {
     padding: 1rem;
     min-width: 100px;
   }
-  
+
   .stat-number {
     font-size: 1.5rem;
   }
-  
+
   .study-groups-grid {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
-  
+
   .study-group-card {
     padding: 1rem;
   }
-  
+
   .group-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.5rem;
   }
-  
+
   .group-actions {
     flex-direction: column;
   }
-  
+
   .members-list {
     grid-template-columns: 1fr;
   }
-  
+
   .member-card {
     padding: 0.5rem;
   }

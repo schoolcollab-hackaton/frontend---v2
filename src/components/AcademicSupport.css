@@ -1,7 +1,97 @@
+.academic-support-navbar {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  color: white;
+  padding: 1rem 0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+
+.academic-support-navbar .navbar-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 1rem;
+}
+
+.academic-support-navbar .navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.academic-support-navbar .back-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.academic-support-navbar .back-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.academic-support-navbar .page-title h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.academic-support-navbar .page-title p {
+  margin: 0;
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.academic-support-navbar .navbar-right {
+  display: flex;
+  align-items: center;
+}
+
+.academic-support-navbar .user-stats {
+  display: flex;
+  gap: 2rem;
+}
+
+.academic-support-navbar .stat {
+  text-align: center;
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
+  min-width: auto;
+}
+
+.academic-support-navbar .stat-number {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: white;
+}
+
+.academic-support-navbar .stat-label {
+  font-size: 0.8rem;
+  opacity: 0.9;
+  color: white;
+}
+
 .academic-support-container {
   min-height: 100vh;
   background-color: var(--background);
   padding: 2rem 1rem;
+}
+
+.academic-support-main {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 90px 1rem 2rem;
 }
 
 .academic-support-header {
@@ -361,20 +451,20 @@
   .academic-support-container {
     padding: 2rem;
   }
-  
+
   .support-requests-grid {
     max-width: 900px;
   }
-  
+
   .comment-form {
     flex-direction: row;
     align-items: flex-end;
   }
-  
+
   .comment-textarea {
     flex: 1;
   }
-  
+
   .comment-submit {
     flex-shrink: 0;
   }

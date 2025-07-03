@@ -46,6 +46,9 @@ export default function Home() {
       case "Mentorship":
         navigate("/mentorship");
         break;
+      case "Soutien Académique":
+        navigate("/academic-support");
+        break;
       // Add other app routes here
       default:
         console.log(`Opening ${appName} app...`);
@@ -143,6 +146,18 @@ export default function Home() {
                 <span>📚</span>
               </div>
               <h3 className="app-name">Groupes d'Étude</h3>
+            </div>
+
+            <div
+              className={`app-card ${
+                activeApp === "Soutien Académique" ? "active" : ""
+              }`}
+              onClick={() => handleAppClick("Soutien Académique")}
+            >
+              <div className="app-icon-wrapper academic-support">
+                <span>📖</span>
+              </div>
+              <h3 className="app-name">Soutien Académique</h3>
             </div>
           </div>
         </div>
