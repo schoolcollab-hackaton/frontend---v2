@@ -73,13 +73,6 @@ export default function Home() {
           </div>
 
           <div className="navbar-actions">
-            <div className="notifications">
-              <button className="btn-icon">
-                <span>🔔</span>
-                <span className="notification-badge">2</span>
-              </button>
-            </div>
-
             <div className="user-profile">
               <img
                 src={currentUser?.avatar || "https://via.placeholder.com/32"}
