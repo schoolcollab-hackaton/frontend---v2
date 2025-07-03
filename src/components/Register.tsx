@@ -37,7 +37,7 @@ export default function Register() {
       };
 
       await register(registerData);
-      navigate("/complete-profile");
+      navigate("/login");
     } catch (error) {
       console.error("Registration failed:", error);
       setError(error instanceof Error ? error.message : "Registration failed");
