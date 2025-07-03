@@ -103,173 +103,11 @@ export default function SkillSwap() {
     } catch (err) {
       console.error("Failed to load recommendations:", err);
 
-      // Temporary: Handle auth errors gracefully with mock data
-      if (
-        err instanceof Error &&
-        (err.message.includes("401") || err.message.includes("auth"))
-      ) {
-        console.log("Using mock data for demonstration");
-
-        // Mock recommendations data for UI preview
-        const mockRecommendations: SkillSwapRecommendation[] = [
-          {
-            id: 1,
-            nom: "Dupont",
-            prenom: "Marie",
-            score: 85,
-            filiere: "WMD",
-            niveau: "4",
-            roles: [],
-            interests: ["JavaScript", "React", "UI/UX"],
-            competences: [
-              { React: "avancé" },
-              { JavaScript: "avancé" },
-              { "Node.js": "intermédiaire" },
-            ],
-            swap_score: 0.92,
-            swap_details: {
-              skills_they_offer: [
-                {
-                  skill: "React",
-                  their_level: 4,
-                  your_level: 2,
-                  benefit: "Improve from level 2 to 4",
-                },
-                {
-                  skill: "JavaScript",
-                  their_level: 4,
-                  your_level: 3,
-                  benefit: "Advanced techniques",
-                },
-              ],
-              skills_you_offer: [
-                {
-                  skill: "Python",
-                  your_level: 4,
-                  their_level: 1,
-                  benefit: "You can teach this skill",
-                },
-              ],
-              mutual_benefits: [
-                "Cross-domain collaboration between BDAI and WMD",
-                "Complementary frontend/backend skills",
-              ],
-              skill_gaps_filled: 2,
-              complementary_skills: 1,
-            },
-            recommendation_type: "skill_swap",
-          },
-          {
-            id: 2,
-            nom: "Martin",
-            prenom: "Alex",
-            score: 78,
-            filiere: "BDAI",
-            niveau: "3",
-            roles: [],
-            interests: ["Python", "Machine Learning", "Data Science"],
-            competences: [
-              { Python: "avancé" },
-              { "Machine Learning": "intermédiaire" },
-              { SQL: "avancé" },
-            ],
-            swap_score: 0.87,
-            swap_details: {
-              skills_they_offer: [
-                {
-                  skill: "Machine Learning",
-                  their_level: 3,
-                  your_level: 1,
-                  benefit: "Learn new skill",
-                },
-                {
-                  skill: "SQL",
-                  their_level: 4,
-                  your_level: 2,
-                  benefit: "Database expertise",
-                },
-              ],
-              skills_you_offer: [
-                {
-                  skill: "React",
-                  your_level: 3,
-                  their_level: 1,
-                  benefit: "Frontend development",
-                },
-              ],
-              mutual_benefits: [
-                "Data Science meets Web Development",
-                "Perfect for full-stack collaboration",
-              ],
-              skill_gaps_filled: 2,
-              complementary_skills: 1,
-            },
-            recommendation_type: "skill_swap",
-          },
-          {
-            id: 3,
-            nom: "Rousseau",
-            prenom: "Sophie",
-            score: 92,
-            filiere: "CCSN",
-            niveau: "5",
-            roles: [],
-            interests: ["Cybersecurity", "Network", "Ethical Hacking"],
-            competences: [
-              { Cybersecurity: "avancé" },
-              { "Network Security": "avancé" },
-              { Linux: "avancé" },
-            ],
-            swap_score: 0.83,
-            swap_details: {
-              skills_they_offer: [
-                {
-                  skill: "Cybersecurity",
-                  their_level: 4,
-                  your_level: 0,
-                  benefit: "New skill to learn",
-                },
-                {
-                  skill: "Linux",
-                  their_level: 4,
-                  your_level: 2,
-                  benefit: "System administration",
-                },
-              ],
-              skills_you_offer: [
-                {
-                  skill: "Web Development",
-                  your_level: 3,
-                  their_level: 1,
-                  benefit: "Modern web security",
-                },
-              ],
-              mutual_benefits: [
-                "Security meets Development",
-                "Build secure applications together",
-              ],
-              skill_gaps_filled: 2,
-              complementary_skills: 1,
-            },
-            recommendation_type: "skill_swap",
-          },
-        ];
-
-        setRecommendations(mockRecommendations);
-
-        // Show a notice that this is demo data
-        setTimeout(() => {
-          if (recommendations.length > 0) {
-            console.log("📝 Demo Mode: Affichage des données de démonstration");
-          }
-        }, 1000);
-      } else {
-        setError(
-          err instanceof Error
-            ? err.message
-            : "Erreur lors du chargement des recommandations"
-        );
-      }
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Erreur lors du chargement des recommandations"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -281,55 +119,7 @@ export default function SkillSwap() {
       setSwapRequests(received);
     } catch (err) {
       console.error("Failed to load swap requests:", err);
-
-      // Temporary: Handle auth errors gracefully with mock data
-      if (
-        err instanceof Error &&
-        (err.message.includes("401") || err.message.includes("auth"))
-      ) {
-        console.log("Using mock swap requests for demonstration");
-
-        // Mock swap requests for UI preview
-        const mockRequests: SwapRequest[] = [
-          {
-            id: 1,
-            sender_id: 5,
-            receiver_id: 1,
-            message:
-              "Salut ! J'aimerais apprendre React avec toi, en échange je peux t'enseigner Python et Django !",
-            status: "pending",
-            created_at: "2025-07-02T14:30:00Z",
-            skill_offered: "Python/Django",
-            skill_wanted: "React",
-          },
-          {
-            id: 2,
-            sender_id: 8,
-            receiver_id: 1,
-            message:
-              "Hello ! On pourrait faire un échange sur les bases de données ? J'ai de l'expérience en SQL et NoSQL.",
-            status: "accepted",
-            created_at: "2025-07-01T10:15:00Z",
-            skill_offered: "SQL/MongoDB",
-            skill_wanted: "JavaScript avancé",
-          },
-          {
-            id: 3,
-            sender_id: 12,
-            receiver_id: 1,
-            message:
-              "Intéressé par un échange UI/UX contre du développement mobile ?",
-            status: "pending",
-            created_at: "2025-07-03T09:45:00Z",
-            skill_offered: "UI/UX Design",
-            skill_wanted: "React Native",
-          },
-        ];
-
-        setSwapRequests(mockRequests);
-      } else {
-        setSwapRequests([]); // Show empty state for other errors
-      }
+      setSwapRequests([]); // Show empty state for other errors
     }
   };
 
@@ -474,6 +264,10 @@ export default function SkillSwap() {
     setSelectedRequest(null);
   };
 
+  const handleProfileClick = (profile: Profile) => {
+    setSelectedProfile(profile);
+  };
+
   // Loading state
   if (isLoading) {
     return (
@@ -600,7 +394,7 @@ export default function SkillSwap() {
                     <div
                       key={profile.id}
                       className="profile-card enhanced"
-                      onClick={() => setSelectedProfile(profile)}
+                      onClick={() => handleProfileClick(profile)}
                     >
                       <div className="profile-header">
                         <img
@@ -622,8 +416,7 @@ export default function SkillSwap() {
                           {profile.swap_score && (
                             <div className="ai-score">
                               <span className="ai-badge">
-                                Score IA:{" "}
-                                {(profile.swap_score * 100).toFixed(0)}%
+                                Score IA: {profile.swap_score.toFixed(2)}
                               </span>
                             </div>
                           )}
@@ -667,7 +460,7 @@ export default function SkillSwap() {
                     <div key={request.id} className="request-card enhanced">
                       <div className="request-header">
                         <img
-                          src={`https://i.pravatar.cc/150?img=${request.sender_id}`}
+                          src="/placeholder-avatar.png"
                           alt="Profile"
                           className="profile-avatar"
                         />
@@ -767,7 +560,7 @@ export default function SkillSwap() {
                     {selectedProfile.swap_score && (
                       <div className="stat-item">
                         <span className="stat-number">
-                          {(selectedProfile.swap_score * 100).toFixed(0)}%
+                          {selectedProfile.swap_score.toFixed(2)}
                         </span>
                         <span className="stat-label">Match IA</span>
                       </div>
@@ -946,7 +739,9 @@ export default function SkillSwap() {
               <button
                 className="btn btn-primary"
                 onClick={() => {
-                  handleSendSwapRequest(swapRequestModal.profile);
+                  if (swapRequestModal.profile) {
+                    handleSendSwapRequest(swapRequestModal.profile);
+                  }
                   setSwapRequestModal({ isOpen: false, profile: null });
                 }}
               >
