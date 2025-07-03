@@ -144,6 +144,67 @@ export interface StudyGroup {
     nombre_membres: number;
 }
 
+export interface MentorRecommendation {
+    id: number;
+    nom: string;
+    prenom: string;
+    score: number;
+    filiere?: string;
+    niveau?: string;
+    roles: string[];
+    interests: string[];
+    competences: Array<{ [key: string]: any }>;
+    avatar?: string;
+    discord?: string;
+    linkedin?: string;
+    match_score: number;
+    mentorship_details: {
+        experience_match: number;
+        skill_alignment: number;
+        compatibility_score: number;
+        mentorship_areas: string[];
+    };
+}
+
+export interface MentorshipRequest {
+    id: number;
+    type: string;
+    sender_id: number;
+    receiver_id: number;
+    message: string;
+    status: 'pending' | 'accepted' | 'rejected';
+    created_at: string;
+    updated_at: string;
+}
+
+export interface CreateMentorshipRequest {
+    type: 'mentoring';
+    receiver_id: number;
+    message: string;
+}
+
+export interface Parrainage {
+    id: number;
+    statut: 'Pending' | 'Approved' | 'Completed' | 'Cancelled';
+    dateDemande: string;
+    parrain_id: number;
+    parrain_name: string;
+    parrain_avatar?: string;
+    filleul_id: number;
+    filleul_name: string;
+    filleul_avatar?: string;
+}
+
+export interface MentorshipRelationship {
+    id: number;
+    utilisateur_id: number;
+    mentor_id: number;
+    date_added: string;
+    status: 'active' | 'blocked';
+    utilisateur?: User;
+    mentor?: User;
+}
+
 class ApiService {
     private async request<T>(
         endpoint: string,
@@ -406,6 +467,81 @@ class ApiService {
     async leaveGroup(groupId: number): Promise<void> {
         return await this.request<void>(`/groupes/${groupId}/quitter`, {
             method: 'POST',
+        });
+    }
+
+    // Mentorship methods
+    async getMentorRecommendations(limit: number = 10): Promise<MentorRecommendation[]> {
+        return await this.request<MentorRecommendation[]>(
+            `/recommendations/mentors?limit=${limit}`
+        );
+    }
+
+    async sendMentorshipRequest(data: {
+        receiver_id: number;
+        message: string;
+    }): Promise<MentorshipRequest> {
+        const requestData: CreateMentorshipRequest = {
+            type: 'mentoring',
+            receiver_id: data.receiver_id,
+            message: data.message,
+        };
+
+        return await this.request<MentorshipRequest>('/requests', {
+            method: 'POST',
+            body: JSON.stringify(requestData),
+        });
+    }
+
+    async getReceivedMentorshipRequests(): Promise<MentorshipRequest[]> {
+        return await this.request<MentorshipRequest[]>('/requests/received');
+    }
+
+    async getSentMentorshipRequests(): Promise<MentorshipRequest[]> {
+        return await this.request<MentorshipRequest[]>('/requests/sent');
+    }
+
+    async acceptMentorshipRequest(requestId: number): Promise<{ message: string }> {
+        return await this.request<{ message: string }>(`/requests/${requestId}/accept`, {
+            method: 'PUT',
+        });
+    }
+
+    async rejectMentorshipRequest(requestId: number): Promise<{ message: string }> {
+        return await this.request<{ message: string }>(`/requests/${requestId}/reject`, {
+            method: 'PUT',
+        });
+    }
+
+    // Get mentorship relationships
+    async getMyMentorships(): Promise<MentorshipRelationship[]> {
+        return await this.request<MentorshipRelationship[]>('/mentorships/mine');
+    }
+
+    async getMyMentees(): Promise<MentorshipRelationship[]> {
+        return await this.request<MentorshipRelationship[]>('/mentorships/mentees');
+    }
+
+    async getMyMentors(): Promise<MentorshipRelationship[]> {
+        return await this.request<MentorshipRelationship[]>('/mentorships/mentors');
+    }
+
+    // Mentorship management methods
+    async removeMentorship(mentorshipId: number): Promise<{ message: string }> {
+        return await this.request<{ message: string }>(`/mentorships/${mentorshipId}`, {
+            method: 'DELETE',
+        });
+    }
+
+    async blockMentorship(mentorshipId: number): Promise<{ message: string }> {
+        return await this.request<{ message: string }>(`/mentorships/${mentorshipId}/block`, {
+            method: 'PUT',
+        });
+    }
+
+    async unblockMentorship(mentorshipId: number): Promise<{ message: string }> {
+        return await this.request<{ message: string }>(`/mentorships/${mentorshipId}/unblock`, {
+            method: 'PUT',
         });
     }
 }
