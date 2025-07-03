@@ -683,12 +683,22 @@ export default function SkillSwap() {
                     </h3>
                     <div className="swap-benefits">
                       {selectedProfile.swap_details.mutual_benefits?.map(
-                        (benefit: string, index: number) => (
-                          <div key={index} className="benefit-item">
-                            <span className="benefit-icon">✨</span>
-                            <span className="benefit-text">{benefit}</span>
-                          </div>
-                        )
+                        (benefit: string, index: number) => {
+                          // Clean enum values from benefit text
+                          const cleanBenefit =
+                            typeof benefit === "string"
+                              ? benefit.replace(/FiliereEnum\./g, "")
+                              : String(benefit);
+
+                          return (
+                            <div key={index} className="benefit-item">
+                              <span className="benefit-icon">✨</span>
+                              <span className="benefit-text">
+                                {cleanBenefit}
+                              </span>
+                            </div>
+                          );
+                        }
                       )}
                     </div>
                   </div>

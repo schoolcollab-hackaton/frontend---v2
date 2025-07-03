@@ -86,7 +86,7 @@ export interface SwapRequest {
 }
 
 export interface CreateSwapRequest {
-    type: 'skill_swap';
+    type: 'skill-swap';
     receiver_id: number;
     message: string;
 }
@@ -255,7 +255,7 @@ class ApiService {
         message: string;
     }): Promise<SwapRequest> {
         const requestData: CreateSwapRequest = {
-            type: 'skill_swap',
+            type: 'skill-swap',
             receiver_id: data.receiver_id,
             message: data.message,
         };
