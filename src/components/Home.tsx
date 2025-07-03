@@ -90,9 +90,9 @@ export default function Home() {
               <User size={20} />
             </div>
 
-            <button onClick={handleLogout} className="btn-icon">
+            <div onClick={handleLogout} className="btn-icon">
               <LogOut size={20} />
-            </button>
+            </div>
           </div>
         </div>
       </nav>
