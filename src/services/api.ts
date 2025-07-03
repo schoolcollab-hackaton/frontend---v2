@@ -125,6 +125,25 @@ export interface ChatHistory {
     date: string;
 }
 
+export interface GroupMember {
+    id: number;
+    nom: string;
+    prenom: string;
+    email: string;
+    filiere?: string;
+    niveau?: number;
+    avatar?: string;
+}
+
+export interface StudyGroup {
+    id: number;
+    nom: string;
+    description: string;
+    centre_interet?: string;
+    membres: GroupMember[];
+    nombre_membres: number;
+}
+
 class ApiService {
     private async request<T>(
         endpoint: string,
@@ -367,6 +386,27 @@ class ApiService {
 
     async getChatIntents(): Promise<any> {
         return await this.request<any>('/chatbot/intents');
+    }
+
+    // Groups methods
+    async getAllGroups(): Promise<StudyGroup[]> {
+        return await this.request<StudyGroup[]>('/groupes/all');
+    }
+
+    async getGroupById(groupId: number): Promise<StudyGroup> {
+        return await this.request<StudyGroup>(`/groupe/${groupId}`);
+    }
+
+    async joinGroup(groupId: number): Promise<void> {
+        return await this.request<void>(`/groupes/${groupId}/rejoindre`, {
+            method: 'POST',
+        });
+    }
+
+    async leaveGroup(groupId: number): Promise<void> {
+        return await this.request<void>(`/groupes/${groupId}/quitter`, {
+            method: 'POST',
+        });
     }
 }
 

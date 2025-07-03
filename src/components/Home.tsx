@@ -40,6 +40,9 @@ export default function Home() {
       case "Assistant IA":
         navigate("/ai-chatbot");
         break;
+      case "Groupes d'Étude":
+        navigate("/study-groups");
+        break;
       // Add other app routes here
       default:
         console.log(`Opening ${appName} app...`);
@@ -132,6 +135,18 @@ export default function Home() {
                 <span>🤖</span>
               </div>
               <h3 className="app-name">Assistant IA</h3>
+            </div>
+
+            <div
+              className={`app-card ${
+                activeApp === "Groupes d'Étude" ? "active" : ""
+              }`}
+              onClick={() => handleAppClick("Groupes d'Étude")}
+            >
+              <div className="app-icon-wrapper study-groups">
+                <span>📚</span>
+              </div>
+              <h3 className="app-name">Groupes d'Étude</h3>
             </div>
           </div>
         </div>

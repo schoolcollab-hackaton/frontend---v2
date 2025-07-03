@@ -10,6 +10,7 @@ import CompleteProfile from "./components/CompleteProfile.tsx";
 import Home from "./components/Home.tsx";
 import SkillSwap from "./components/SkillSwap.tsx";
 import AiChatbot from "./components/AiChatbot.tsx";
+import StudyGroups from "./components/StudyGroups.tsx";
 import { useAuth } from "./contexts/AuthContext";
 import "./App.css";
 
@@ -100,6 +101,20 @@ function App() {
               isAuthenticated ? (
                 user?.profile_completed ? (
                   <AiChatbot />
+                ) : (
+                  <Navigate to="/complete-profile" />
+                )
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
+          />
+          <Route
+            path="/study-groups"
+            element={
+              isAuthenticated ? (
+                user?.profile_completed ? (
+                  <StudyGroups />
                 ) : (
                   <Navigate to="/complete-profile" />
                 )
