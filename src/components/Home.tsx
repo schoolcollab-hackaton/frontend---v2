@@ -76,14 +76,6 @@ export default function Home() {
           </div>
 
           <div className="navbar-actions">
-            <div className="user-profile">
-              <img
-                src={currentUser?.avatar || "https://via.placeholder.com/32"}
-                alt="Profile"
-                className="user-avatar"
-              />
-            </div>
-
             <button onClick={handleLogout} className="btn-icon">
               <span>↪️</span>
             </button>

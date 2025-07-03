@@ -61,9 +61,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const register = async (data: { nom: string; prenom: string; email: string; password: string }) => {
     try {
-      const response = await apiService.register(data);
-      setUser(response.user);
-      setIsAuthenticated(true);
+      await apiService.register(data);
     } catch (error) {
       console.error('Registration failed:', error);
       throw error;
