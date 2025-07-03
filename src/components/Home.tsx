@@ -37,6 +37,9 @@ export default function Home() {
       case "Skill Swap":
         navigate("/skill-swap");
         break;
+      case "Assistant IA":
+        navigate("/ai-chatbot");
+        break;
       // Add other app routes here
       default:
         console.log(`Opening ${appName} app...`);
