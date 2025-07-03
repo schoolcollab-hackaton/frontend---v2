@@ -98,7 +98,30 @@ export default function SkillSwap() {
     try {
       setIsLoading(true);
       setError(null);
+      console.log("=== LOADING RECOMMENDATIONS FROM BACKEND ===");
       const data = await apiService.getSkillSwapRecommendations(10);
+      console.log("Raw recommendations received from API:", data);
+      console.log("Number of recommendations:", data.length);
+
+      // Log each recommendation in detail
+      data.forEach((rec, index) => {
+        console.log(`=== RAW RECOMMENDATION ${index + 1} ===`);
+        console.log("Complete object:", rec);
+        console.log("Filiere:", rec.filiere, "Type:", typeof rec.filiere);
+        console.log("Niveau:", rec.niveau, "Type:", typeof rec.niveau);
+        console.log("Competences structure:", rec.competences);
+        console.log("Competences length:", rec.competences?.length);
+        if (rec.competences && rec.competences.length > 0) {
+          console.log("First competence:", rec.competences[0]);
+          console.log(
+            "Competence keys:",
+            Object.keys(rec.competences[0] || {})
+          );
+        }
+        console.log("Swap details:", rec.swap_details);
+        console.log("=== END RAW RECOMMENDATION ===");
+      });
+
       setRecommendations(data);
     } catch (err) {
       console.error("Failed to load recommendations:", err);
@@ -127,34 +150,109 @@ export default function SkillSwap() {
   const convertRecommendationToProfile = (
     rec: SkillSwapRecommendation
   ): Profile => {
-    // Extract skills from competences
-    const skills = rec.competences
-      .map((comp) => Object.keys(comp)[0] || "")
-      .filter(Boolean);
+    console.log("=== CONVERTING RECOMMENDATION TO PROFILE ===");
+    console.log("Raw recommendation data:", rec);
+    console.log("ID:", rec.id);
+    console.log("Name:", rec.prenom, rec.nom);
+    console.log("Filiere:", rec.filiere, "Type:", typeof rec.filiere);
+    console.log("Niveau:", rec.niveau, "Type:", typeof rec.niveau);
+    console.log("Score:", rec.score);
+    console.log("Swap Score:", rec.swap_score);
+    console.log("Competences:", rec.competences);
+    console.log("Interests:", rec.interests);
+    console.log("Roles:", rec.roles);
+    console.log("Swap Details:", rec.swap_details);
+
+    // Fix filiere enum values (remove "FiliereEnum." prefix)
+    const cleanFiliere =
+      typeof rec.filiere === "string"
+        ? rec.filiere.replace(/^FiliereEnum\./, "")
+        : rec.filiere;
+
+    // Fix niveau - convert to string if it's a number
+    const cleanNiveau = rec.niveau ? String(rec.niveau) : "Non spécifié";
+
+    // Extract skills from competences - handle different possible structures
+    let skills: string[] = [];
+
+    if (Array.isArray(rec.competences)) {
+      skills = rec.competences
+        .map((comp) => {
+          console.log("Processing competence:", comp);
+
+          // Handle different competence structures
+          if (typeof comp === "string") {
+            return comp;
+          } else if (typeof comp === "object" && comp !== null) {
+            // If it's an object with a "nom" property
+            if ("nom" in comp && typeof comp.nom === "string") {
+              return comp.nom;
+            }
+            // If it's an object like {"React": "avancé"}
+            const keys = Object.keys(comp);
+            if (keys.length > 0 && keys[0] !== "nom") {
+              return keys[0]; // Return the skill name (key)
+            }
+            // If it has only "nom" as key, it might be malformed
+            if (keys.length === 1 && keys[0] === "nom") {
+              return String(comp[keys[0]]);
+            }
+          }
+          return null;
+        })
+        .filter(
+          (skill): skill is string =>
+            skill !== null && skill !== "" && skill !== "nom"
+        );
+    }
+
+    console.log("Final extracted skills:", skills);
 
     // Generate avatar URL
     const avatar = `https://i.pravatar.cc/150?img=${rec.id}`;
 
-    // Create bio from swap details
-    const bio =
-      rec.swap_details?.mutual_benefits?.join(". ") ||
-      `Étudiant en ${rec.filiere || "formation"} avec un score de ${
+    // Create bio - fix enum values in mutual benefits
+    let bio = "";
+    if (
+      rec.swap_details?.mutual_benefits &&
+      Array.isArray(rec.swap_details.mutual_benefits)
+    ) {
+      bio = rec.swap_details.mutual_benefits
+        .map((benefit) =>
+          typeof benefit === "string"
+            ? benefit.replace(/FiliereEnum\./g, "") // Remove all FiliereEnum. prefixes
+            : String(benefit)
+        )
+        .join(". ");
+    }
+
+    // Fallback bio if no mutual benefits
+    if (!bio) {
+      bio = `Étudiant en ${cleanFiliere || "formation"} avec un score de ${
         rec.score
       }.`;
+    }
 
-    return {
+    console.log("Generated bio:", bio);
+
+    const profile = {
       id: rec.id,
       name: `${rec.prenom} ${rec.nom}`,
       avatar,
       skills,
-      level: rec.niveau || "Non spécifié",
-      filiere: rec.filiere || "Non spécifié",
+      level: cleanNiveau,
+      filiere: cleanFiliere || "Non spécifié",
       bio,
       rating: Math.min(5, Math.max(3, rec.swap_score || 4)),
       exchanges: Math.floor(rec.score / 10) || 1,
       swap_score: rec.swap_score,
       swap_details: rec.swap_details,
     };
+
+    console.log("Final converted profile:", profile);
+    console.log("=== END CONVERSION ===\n");
+
+    return profile;
   };
 
   // Convert profiles to display format
@@ -212,8 +310,6 @@ export default function SkillSwap() {
       await apiService.sendSwapRequest({
         receiver_id: profile.id,
         message: requestData.message,
-        skill_offered: requestData.skillOffered,
-        skill_wanted: requestData.skillWanted,
       });
 
       // Show success with smooth notification instead of alert
@@ -460,7 +556,7 @@ export default function SkillSwap() {
                     <div key={request.id} className="request-card enhanced">
                       <div className="request-header">
                         <img
-                          src="/placeholder-avatar.png"
+                          src={`https://i.pravatar.cc/150?img=${request.sender_id}`}
                           alt="Profile"
                           className="profile-avatar"
                         />
@@ -471,11 +567,7 @@ export default function SkillSwap() {
                             </h3>
                             <div className="exchange-info">
                               <span className="exchange-offer">
-                                Offre: {request.skill_offered}
-                              </span>
-                              <span className="exchange-arrow">→</span>
-                              <span className="exchange-want">
-                                Cherche: {request.skill_wanted}
+                                Type: {request.type}
                               </span>
                             </div>
                           </div>
@@ -702,7 +794,7 @@ export default function SkillSwap() {
         </div>
       )}
 
-      {/* Swap Request Modal (simplified for demo) */}
+      {/* Swap Request Modal (updated for backend integration) */}
       {swapRequestModal.isOpen && swapRequestModal.profile && (
         <div className="swap-request-modal">
           <div className="modal-content">
@@ -721,31 +813,49 @@ export default function SkillSwap() {
             </p>
             <div className="modal-skills">
               <div className="skill-offered">
-                <strong>Compétence proposée :</strong>{" "}
-                {
-                  swapRequestModal.profile.swap_details.skills_they_offer[0]
-                    .skill
-                }
+                <strong>Profil:</strong> {swapRequestModal.profile.filiere} •{" "}
+                {swapRequestModal.profile.level}
               </div>
               <div className="skill-wanted">
-                <strong>Compétence recherchée :</strong>{" "}
-                {
-                  swapRequestModal.profile.swap_details.skills_you_offer[0]
-                    .skill
-                }
+                <strong>Compétences:</strong>{" "}
+                {swapRequestModal.profile.skills.join(", ")}
               </div>
             </div>
+            <textarea
+              placeholder="Écrivez votre message d'échange..."
+              className="modal-message-input"
+              id="swap-message"
+              rows={4}
+              style={{
+                width: "100%",
+                padding: "0.75rem",
+                border: "1px solid var(--border-color)",
+                borderRadius: "8px",
+                resize: "vertical",
+                fontFamily: "inherit",
+                fontSize: "0.9rem",
+                margin: "1rem 0",
+              }}
+            />
             <div className="modal-actions">
               <button
                 className="btn btn-primary"
                 onClick={() => {
-                  if (swapRequestModal.profile) {
-                    handleSendSwapRequest(swapRequestModal.profile);
-                  }
+                  const messageInput = document.getElementById(
+                    "swap-message"
+                  ) as HTMLTextAreaElement;
+                  const message =
+                    messageInput?.value || "Demande d'échange de compétences";
+
+                  confirmSwapRequest(swapRequestModal.profile!, {
+                    message,
+                    skillOffered: "",
+                    skillWanted: "",
+                  });
                   setSwapRequestModal({ isOpen: false, profile: null });
                 }}
               >
-                Confirmer l'échange
+                Envoyer la demande
               </button>
               <button
                 className="btn btn-secondary"

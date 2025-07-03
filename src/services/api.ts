@@ -76,13 +76,19 @@ export interface SkillSwapRecommendation {
 
 export interface SwapRequest {
     id: number;
+    type: string;
     sender_id: number;
     receiver_id: number;
     message: string;
     status: 'pending' | 'accepted' | 'rejected';
     created_at: string;
-    skill_offered: string;
-    skill_wanted: string;
+    updated_at: string;
+}
+
+export interface CreateSwapRequest {
+    type: 'skill_swap';
+    receiver_id: number;
+    message: string;
 }
 
 export interface DemandeSoutien {
@@ -243,39 +249,43 @@ class ApiService {
         );
     }
 
-    // Send swap request
+    // Send swap request (updated to match backend)
     async sendSwapRequest(data: {
         receiver_id: number;
         message: string;
-        skill_offered: string;
-        skill_wanted: string;
     }): Promise<SwapRequest> {
-        return await this.request<SwapRequest>('/skill-swap/requests', {
+        const requestData: CreateSwapRequest = {
+            type: 'skill_swap',
+            receiver_id: data.receiver_id,
+            message: data.message,
+        };
+
+        return await this.request<SwapRequest>('/requests', {
             method: 'POST',
-            body: JSON.stringify(data),
+            body: JSON.stringify(requestData),
         });
     }
 
-    // Get received swap requests
+    // Get received swap requests (updated to match backend)
     async getReceivedSwapRequests(): Promise<SwapRequest[]> {
-        return await this.request<SwapRequest[]>('/skill-swap/requests/received');
+        return await this.request<SwapRequest[]>('/requests/received');
     }
 
-    // Get sent swap requests
+    // Get sent swap requests (updated to match backend)
     async getSentSwapRequests(): Promise<SwapRequest[]> {
-        return await this.request<SwapRequest[]>('/skill-swap/requests/sent');
+        return await this.request<SwapRequest[]>('/requests/sent');
     }
 
-    // Accept swap request
-    async acceptSwapRequest(requestId: number): Promise<SwapRequest> {
-        return await this.request<SwapRequest>(`/skill-swap/requests/${requestId}/accept`, {
+    // Accept swap request (updated to match backend)
+    async acceptSwapRequest(requestId: number): Promise<{ message: string }> {
+        return await this.request<{ message: string }>(`/requests/${requestId}/accept`, {
             method: 'PUT',
         });
     }
 
-    // Reject swap request
-    async rejectSwapRequest(requestId: number): Promise<SwapRequest> {
-        return await this.request<SwapRequest>(`/skill-swap/requests/${requestId}/reject`, {
+    // Reject swap request (updated to match backend)
+    async rejectSwapRequest(requestId: number): Promise<{ message: string }> {
+        return await this.request<{ message: string }>(`/requests/${requestId}/reject`, {
             method: 'PUT',
         });
     }
