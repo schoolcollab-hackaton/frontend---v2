@@ -86,7 +86,11 @@ export default function Home() {
           </div>
 
           <div className="navbar-actions">
-            <div className="user-profile">
+            <div 
+              className="user-profile"
+              onClick={() => navigate("/profile")}
+              style={{ cursor: "pointer" }}
+            >
               <User size={20} />
             </div>
 
@@ -102,7 +106,7 @@ export default function Home() {
           <div className="welcome-section">
             <h1 className="welcome-title">
               Bienvenue,{" "}
-              <span className="user-highlight">{currentUser?.prenom}</span>
+              <span className="user-highlight">{currentUser?.prenom} 🎉</span>
             </h1>
           </div>
 

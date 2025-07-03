@@ -8,6 +8,7 @@ import Register from "./components/Register.tsx";
 import Login from "./components/Login.tsx";
 import CompleteProfile from "./components/CompleteProfile.tsx";
 import Home from "./components/Home.tsx";
+import Profile from "./components/Profile.tsx";
 import SkillSwap from "./components/SkillSwap.tsx";
 import AiChatbot from "./components/AiChatbot.tsx";
 import StudyGroups from "./components/StudyGroups.tsx";
@@ -145,6 +146,20 @@ function App() {
               isAuthenticated ? (
                 user?.profile_completed ? (
                   <AcademicSupport />
+                ) : (
+                  <Navigate to="/complete-profile" />
+                )
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              isAuthenticated ? (
+                user?.profile_completed ? (
+                  <Profile />
                 ) : (
                   <Navigate to="/complete-profile" />
                 )
